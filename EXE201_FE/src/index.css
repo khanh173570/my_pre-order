@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .header-offset {
+    padding-top: 144px; /* Adjust based on your header height: 32px (top bar) + 72px (main header) + 40px (nav) */
+  }
+
+  .header-bg {
+    background-position: center 0;
+    background-size: 100% auto;
+  }
+}
+
+/* Make sure the header stays on top */
+.header-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: white;
+}

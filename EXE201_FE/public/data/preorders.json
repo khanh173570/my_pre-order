@@ -1,0 +1,186 @@
+{
+  "preorders": [
+    {
+      "id": "1",
+      "name": "Gundam Astral Phantom",
+      "image": "/images/product.webp",
+      "releaseDate": "18/03/2025",
+      "description": "Khi nó xuất hiện, chỉ có sự lặng quẽn và hủy diệt đằng sau nó thư.",
+      "deadline": {
+        "hours": 5,
+        "minutes": 1,
+        "seconds": 48
+      },
+      "currentQuantity": 185,
+      "targetQuantity": 230
+    },
+    {
+      "id": "2",
+      "name": "Gundam Titan Breaker",
+      "image": "/images/product.webp",
+      "releaseDate": "18/03/2025",
+      "description": "Luôn qua chiến trường như một cơn gió ma quái, không ai có thể theo kịp.",
+      "deadline": {
+        "hours": 3,
+        "minutes": 30,
+        "seconds": 0
+      },
+      "currentQuantity": 200,
+      "targetQuantity": 200
+    },
+    {
+      "id": "3",
+      "name": "Gundam Eclipse Nova",
+      "image": "/images/product.webp",
+      "releaseDate": "18/03/2025",
+      "description": "Hồi sinh từ lửa địa ngục, mang theo cơn thịnh nộ của quỷ dữ.",
+      "deadline": {
+        "hours": 8,
+        "minutes": 15,
+        "seconds": 30
+      },
+      "currentQuantity": 145,
+      "targetQuantity": 250
+    },
+    {
+      "id": "4",
+      "name": "Gundam Celestial Dragon",
+      "image": "/images/product.webp",
+      "releaseDate": "20/06/2025",
+      "description": "Sức mạnh của rồng thiên đường, kết hợp với công nghệ tối tân nhất.",
+      "deadline": {
+        "hours": 12,
+        "minutes": 45,
+        "seconds": 0
+      },
+      "currentQuantity": 75,
+      "targetQuantity": 180
+    },
+    {
+      "id": "5",
+      "name": "Gundam Shadow Reaper",
+      "image": "/images/product.webp",
+      "releaseDate": "15/07/2025",
+      "description": "Như một bóng ma trong đêm tối, lặng lẽ và chết chóc.",
+      "deadline": {
+        "hours": 6,
+        "minutes": 20,
+        "seconds": 15
+      },
+      "currentQuantity": 90,
+      "targetQuantity": 200
+    },
+    {
+      "id": "6",
+      "name": "Gundam Storm Bringer",
+      "image": "/images/product.webp",
+      "releaseDate": "01/08/2025",
+      "description": "Mang theo sức mạnh của bão tố, quét sạch mọi kẻ thù trên đường đi.",
+      "deadline": {
+        "hours": 9,
+        "minutes": 0,
+        "seconds": 0
+      },
+      "currentQuantity": 110,
+      "targetQuantity": 220
+    },
+    {
+      "id": "7",
+      "name": "Gundam Phoenix Rising",
+      "image": "/images/product.webp",
+      "releaseDate": "25/08/2025",
+      "description": "Tái sinh từ tro tàn, mạnh mẽ hơn bao giờ hết.",
+      "deadline": {
+        "hours": 4,
+        "minutes": 55,
+        "seconds": 30
+      },
+      "currentQuantity": 160,
+      "targetQuantity": 230
+    },
+    {
+      "id": "8",
+      "name": "Gundam Frost Giant",
+      "image": "/images/product.webp",
+      "releaseDate": "10/09/2025",
+      "description": "Khổng lồ băng giá, đóng băng mọi thứ trong bán kính tiếp cận.",
+      "deadline": {
+        "hours": 7,
+        "minutes": 30,
+        "seconds": 45
+      },
+      "currentQuantity": 120,
+      "targetQuantity": 210
+    },
+    {
+      "id": "9",
+      "name": "Gundam Thunder Knight",
+      "image": "/images/product.webp",
+      "releaseDate": "05/10/2025",
+      "description": "Hiệp sĩ sấm sét, mỗi đòn đánh đều mang theo sức mạnh của tia chớp.",
+      "deadline": {
+        "hours": 10,
+        "minutes": 15,
+        "seconds": 20
+      },
+      "currentQuantity": 170,
+      "targetQuantity": 240
+    },
+    {
+      "id": "10",
+      "name": "Gundam Inferno Blade",
+      "image": "/images/product.webp",
+      "releaseDate": "20/10/2025",
+      "description": "Lưỡi kiếm địa ngục, cắt đứt mọi thứ bằng ngọn lửa vĩnh cửu.",
+      "deadline": {
+        "hours": 5,
+        "minutes": 45,
+        "seconds": 0
+      },
+      "currentQuantity": 130,
+      "targetQuantity": 200
+    },
+    {
+      "id": "11",
+      "name": "Gundam Quantum Voyager",
+      "image": "/images/product.webp",
+      "releaseDate": "15/11/2025",
+      "description": "Du hành xuyên không-thời gian, với công nghệ lượng tử tiên tiến.",
+      "deadline": {
+        "hours": 11,
+        "minutes": 11,
+        "seconds": 11
+      },
+      "currentQuantity": 105,
+      "targetQuantity": 190
+    },
+    {
+      "id": "12",
+      "name": "Gundam Terra Guardian",
+      "image": "/images/product.webp",
+      "releaseDate": "01/12/2025",
+      "description": "Người bảo vệ trái đất, với bộ giáp được rèn từ khoáng chất hiếm.",
+      "deadline": {
+        "hours": 8,
+        "minutes": 40,
+        "seconds": 50
+      },
+      "currentQuantity": 140,
+      "targetQuantity": 230
+    },
+    {
+      "id": "13",
+      "name": "Gundam Cosmic Warrior",
+      "image": "/images/product.webp",
+      "releaseDate": "25/12/2025",
+      "description": "Chiến binh vũ trụ, mang trong mình sức mạnh của các vì sao.",
+      "deadline": {
+        "hours": 6,
+        "minutes": 6,
+        "seconds": 6
+      },
+      "currentQuantity": 190,
+      "targetQuantity": 260
+    }
+  ]
+}

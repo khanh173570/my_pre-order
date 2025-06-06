@@ -60,12 +60,12 @@ export const registerUser = async (
   try {
     // Create registration payload
     const registrationData = {
-      name: userData.get("userName") as string,
+      name: userData.get("name") as string, // Changed from userName to name
       email: userData.get("email") as string,
       password: userData.get("password") as string,
       phone: (userData.get("phone") as string) || "",
       address: (userData.get("address") as string) || "",
-      role: (userData.get("role") as string) || "user", // Default to "user" if not specified
+      role: "user", // Always set to user for registration
     };
 
     const response = await fetch(`${API_BASE_URL}/auth/register`, {
@@ -102,36 +102,44 @@ export const verifyEmail = async (
   otp: string
 ): Promise<AuthResponse> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
+    console.log("Sending verification request:", { email, otp });
+    const response = await fetch(`${API_BASE_URL}/auth/verify-email`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Accept: "application/json",
       },
-      body: JSON.stringify({ email, otp }),
+      body: JSON.stringify({
+        email: email,
+        otp: otp,
+      }),
     });
-
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "OTP verification failed");
+      const errorText = await response.text();
+      console.error("Error response:", errorText);
+      try {
+        const errorData = JSON.parse(errorText);
+        throw new Error(errorData.message || "OTP verification failed");
+      } catch (e) {
+        throw new Error("Server error during OTP verification");
+      }
     }
 
     const data = await response.json();
     console.log("OTP verification API Response:", data);
 
-    if (!data.succeeded) {
+    if (data.status !== "success") {
       throw new Error(data.message || "OTP verification failed");
-    }
-
-    // Transform the response to match our AuthResponse interface
+    } // Transform the response to match our AuthResponse interface
     const authResponse: AuthResponse = {
-      status: "success",
+      status: data.status,
       message: data.message,
-      token: data.data.accessToken,
-      user: data.data.user,
+      token: data.token,
+      user: data.user,
       // Add backward compatibility fields
-      id: data.data.user.id,
-      userName: data.data.user.name,
-      roleName: data.data.user.role,
+      id: data.user.id,
+      userName: data.user.name,
+      roleName: data.user.role,
     };
 
     // Save auth data to localStorage

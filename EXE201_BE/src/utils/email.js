@@ -4,16 +4,18 @@ import nodemailer from "nodemailer";
 const createTransporter = () => {
   try {
     const config = {
-      host: process.env.EMAIL_HOST || "smtp.gmail.com",
-      port: parseInt(process.env.EMAIL_PORT) || 587,
-      secure: false, // true for 465, false for other ports
+      host: process.env.SMTP_HOST || "smtp.gmail.com",
+      port: parseInt(process.env.SMTP_PORT) || 587,
+      secure: process.env.SMTP_SECURE === "true",
       auth: {
         user: process.env.EMAIL_FROM,
         pass: process.env.EMAIL_PASSWORD,
       },
       tls: {
-        rejectUnauthorized: false,
+        rejectUnauthorized: process.env.SMTP_REJECT_UNAUTHORIZED !== "false",
       },
+      debug: true, // Enable debug logs
+      logger: true, // Enable logger
     };
 
     console.log("Email config:", {

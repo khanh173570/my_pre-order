@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../hooks/useAuth";
 import { Users, ShoppingBag, BarChart2, Settings, LogOut } from "lucide-react";
 
 const HomeStaff: React.FC = () => {

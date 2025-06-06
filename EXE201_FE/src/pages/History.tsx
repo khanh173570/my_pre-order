@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { usePreOrder } from "../hooks/usePreOrder";
 import { PageTransition } from "../components/PageTransition";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 
 const History: React.FC = () => {
   const { preOrderHistory } = usePreOrder();

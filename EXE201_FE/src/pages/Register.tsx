@@ -46,7 +46,7 @@ const Register: React.FC = () => {
     try {
       // Create form data to submit
       const submitData = new FormData();
-      submitData.append("userName", formData.userName);
+      submitData.append("name", formData.userName); // Changed from userName to name
       submitData.append("email", formData.email);
       submitData.append("password", formData.password);
       submitData.append("phone", formData.phone);

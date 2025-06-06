@@ -14,10 +14,16 @@ const OTPVerification: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const email = location.state?.email;
-
   useEffect(() => {
-    if (!email) {
-      navigate("/register");
+    if (!email || !location.state?.userId) {
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi",
+        text: "Thông tin xác thực không hợp lệ",
+        confirmButtonColor: "#3085d6",
+      }).then(() => {
+        navigate("/register");
+      });
       return;
     }
 
@@ -33,7 +39,7 @@ const OTPVerification: React.FC = () => {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [email, navigate]);
+  }, [email, navigate, location.state?.userId]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);

@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, useCallback } from "react";
 import { Product } from "../types";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "../hooks/useAuth";
 
 interface CartItem extends Product {
   quantity: number;

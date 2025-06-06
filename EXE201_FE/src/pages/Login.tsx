@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import { loginUser } from "../services/api";
 import { LoginFormData } from "../types";
 import { PageTransition } from "../components/PageTransition";
@@ -14,9 +14,6 @@ const Login: React.FC = () => {
   });
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [pendingNavigation, setPendingNavigation] = useState<string | null>(
-    null
-  );
   const { login, isAuthenticated, currentUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -37,42 +34,15 @@ const Login: React.FC = () => {
     console.log("VITE_ROLE_STAFF:", import.meta.env.VITE_ROLE_STAFF);
     console.log("VITE_ROLE_CUSTOMER:", import.meta.env.VITE_ROLE_CUSTOMER);
   }, [location.state]);
-
   // Handle navigation after successful authentication
   useEffect(() => {
-    if (isAuthenticated && currentUser && pendingNavigation) {
-      console.log("Authentication detected, navigating to:", pendingNavigation);
-      navigate(pendingNavigation, { replace: true });
-      setPendingNavigation(null);
-      setIsLoading(false);
-    }
-  }, [isAuthenticated, currentUser, pendingNavigation, navigate]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
-    try {
-      const userData = await loginUser(formData);
-      console.log("Login response userData:", userData);
-
-      // Get the redirect path from location state (set by ProtectedRoute)
-      const redirectPath = location.state?.from;
-
-      // Determine where to navigate based on role and redirect path
-      let targetPath;
-      console.log("User role:", userData.user.role);
+    if (isAuthenticated && currentUser) {
       console.log(
-        "Environment VITE_ROLE_ADMIN:",
-        import.meta.env.VITE_ROLE_ADMIN
+        "Authentication detected, checking role:",
+        currentUser.user.role
       );
-
-      switch (userData.user.role) {
+      let targetPath;
+      switch (currentUser.user.role) {
         case import.meta.env.VITE_ROLE_ADMIN:
           targetPath = "/admin";
           break;
@@ -85,14 +55,26 @@ const Login: React.FC = () => {
         default:
           targetPath = "/login";
       }
+      console.log("Navigating to role-based path:", targetPath);
+      navigate(targetPath, { replace: true });
+      setIsLoading(false);
+    }
+  }, [isAuthenticated, currentUser, navigate]);
 
-      console.log("Target path:", targetPath);
-      console.log("Redirect path:", redirectPath);
-      const finalPath = redirectPath || targetPath;
-      console.log("Final navigation path:", finalPath);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-      // Set pending navigation before calling login
-      setPendingNavigation(finalPath);
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
+    try {
+      const userData = await loginUser(formData);
+      console.log("Login response userData:", userData); // Log user role for debugging
+      console.log("User role:", userData.user.role);
+      console.log("Login response:", userData);
 
       // Wait for login to complete
       await login(userData);
@@ -100,7 +82,6 @@ const Login: React.FC = () => {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
       setIsLoading(false);
-      setPendingNavigation(null);
     } finally {
       // Don't set loading to false here as it will be handled by useEffect or catch
     }

@@ -1,10 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
-} from "react";
+import React, { createContext, useState, useEffect, ReactNode } from "react";
 import { AuthResponse } from "../types";
 
 interface AuthContextProps {
@@ -14,15 +8,9 @@ interface AuthContextProps {
   logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextProps | undefined>(undefined);
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
-};
+export const AuthContext = createContext<AuthContextProps | undefined>(
+  undefined
+);
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -66,14 +54,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
 
     try {
+      // First, store the token and user data
       localStorage.setItem("auth", JSON.stringify(userData));
+
+      // Then update the state
       setCurrentUser(userData);
       setIsAuthenticated(true);
+
+      // Log success but don't navigate here
       console.log("Login successful in AuthContext:", userData);
       console.log("Auth state updated - isAuthenticated:", true);
+      console.log("Token stored in localStorage");
+
       return Promise.resolve();
     } catch (error) {
       console.error("Login error:", error);
+      localStorage.removeItem("auth"); // Cleanup on error
       return Promise.reject(error);
     }
   };

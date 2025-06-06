@@ -1,22 +1,22 @@
-import express from 'express';
-import { protect, authorize } from '../middleware/auth.middleware.js';
+import express from "express";
+import { protect, authorize } from "../middleware/auth.middleware.js";
 import {
   createProduct,
   getProducts,
   updateProduct,
-  deleteProduct
-} from '../controllers/product.controller.js';
+  deleteProduct,
+} from "../controllers/product.controller.js";
 
 const router = express.Router();
 
 router
-  .route('/')
+  .route("/")
   .get(getProducts)
-  .post(protect, authorize('admin', 'staff'), createProduct);
+  .post(protect, authorize("admin", "staff"), createProduct);
 
 router
-  .route('/:id')
-  .put(protect, authorize('admin', 'staff'), updateProduct)
-  .delete(protect, authorize('admin'), deleteProduct);
+  .route("/:id")
+  .put(protect, authorize("admin", "staff"), updateProduct)
+  .delete(protect, authorize("admin", "staff"), deleteProduct);
 
 export default router;

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import { Search, ShoppingCart, User } from "lucide-react";
 import { useCart } from "../hooks/useCart";
 import { usePreOrder } from "../hooks/usePreOrder";

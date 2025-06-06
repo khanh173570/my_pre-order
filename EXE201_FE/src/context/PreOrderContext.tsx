@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect } from "react";
 import { PreOrderProduct } from "../types";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "../hooks/useAuth";
 
 interface PreOrderHistoryItem extends PreOrderProduct {
   orderDate: string;

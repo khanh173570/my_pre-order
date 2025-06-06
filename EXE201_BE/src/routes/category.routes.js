@@ -13,12 +13,12 @@ const router = express.Router();
 router
   .route("/")
   .get(getCategories)
-  .post(protect, authorize("admin"), createCategory);
+  .post(protect, authorize("admin", "staff"), createCategory);
 
 router
   .route("/:id")
   .get(getCategoryById)
-  .put(protect, authorize("admin"), updateCategory)
-  .delete(protect, authorize("admin"), deleteCategory);
+  .put(protect, authorize("admin", "staff"), updateCategory)
+  .delete(protect, authorize("admin", "staff"), deleteCategory);
 
 export default router;

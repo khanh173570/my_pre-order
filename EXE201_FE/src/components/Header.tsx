@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import { Search, ShoppingCart, User } from "lucide-react";
+import { Search, ShoppingCart, User, CreditCard } from "lucide-react";
 import { useCart } from "../hooks/useCart";
 import { usePreOrder } from "../hooks/usePreOrder";
 
@@ -210,6 +210,14 @@ const Header: React.FC<HeaderProps> = ({ isScrolled }) => {
                           {preOrderHistory.length}
                         </span>
                       )}
+                    </button>
+
+                    <button
+                      onClick={() => navigate("/payment-history")}
+                      className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      <CreditCard size={16} className="mr-2" />
+                      Lịch sử thanh toán
                     </button>
 
                     <div className="border-t border-gray-200">

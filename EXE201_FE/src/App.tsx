@@ -26,6 +26,9 @@ import Policy from "./pages/Policy";
 import Profile from "./pages/Profile";
 import History from "./pages/History";
 import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
+import PaymentReturn from "./pages/PaymentReturn";
+import PaymentHistory from "./pages/PaymentHistory";
 import { AnimatePresence } from "framer-motion";
 
 const App: React.FC = () => {
@@ -54,6 +57,9 @@ const App: React.FC = () => {
                 <Route path="/register" element={<Register />} />
                 <Route path="/otp-verification" element={<OTPVerification />} />
 
+                {/* Payment return route (no layout needed) */}
+                <Route path="/payment/vnpay-return" element={<PaymentReturn />} />
+
                 {/* Customer routes with MainLayout */}
                 <Route element={<MainLayout />}>
                   {/* Redirect root path to login */}
@@ -74,6 +80,16 @@ const App: React.FC = () => {
                   <Route path="/policy" element={<Policy />} />
                   <Route path="/cart" element={<Cart />} />
                   <Route
+                    path="/checkout"
+                    element={
+                      <ProtectedRoute
+                        allowedRoles={[import.meta.env.VITE_ROLE_CUSTOMER]}
+                      >
+                        <Checkout />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
                     path="/profile"
                     element={
                       <ProtectedRoute
@@ -90,6 +106,16 @@ const App: React.FC = () => {
                         allowedRoles={[import.meta.env.VITE_ROLE_CUSTOMER]}
                       >
                         <History />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/payment-history"
+                    element={
+                      <ProtectedRoute
+                        allowedRoles={[import.meta.env.VITE_ROLE_CUSTOMER]}
+                      >
+                        <PaymentHistory />
                       </ProtectedRoute>
                     }
                   />

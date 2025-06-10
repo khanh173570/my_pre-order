@@ -8,11 +8,15 @@ import categoryRoutes from "./routes/category.routes.js";
 import productRoutes from "./routes/product.routes.js";
 import bookingRoutes from "./routes/booking.routes.js";
 import accountRoutes from "./routes/account.routes.js";
+import paymentRoutes from "./routes/payment.routes.js";
 import { errorHandler } from "./middleware/error.middleware.js";
 
 dotenv.config();
 
 const app = express();
+
+// Trust proxy for accurate IP detection (important for VNPay)
+app.set("trust proxy", true);
 
 // Middleware
 app.use(cors());
@@ -25,6 +29,7 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/accounts", accountRoutes);
+app.use("/api/payment", paymentRoutes);
 
 // Error handling
 app.use(errorHandler);

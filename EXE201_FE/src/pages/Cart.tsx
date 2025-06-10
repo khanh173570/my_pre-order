@@ -1,9 +1,33 @@
-import React from "react";
+import React, { useState } from "react";
 import { useCart } from "../hooks/useCart";
 import { MinusCircle, PlusCircle, Trash2 } from "lucide-react";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const Cart: React.FC = () => {
   const { cartItems, updateQuantity, removeFromCart, totalPrice } = useCart();
+  const [isLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handlePayment = () => {
+    try {
+      if (cartItems.length === 0) {
+        toast.error("Giỏ hàng của bạn đang trống");
+        return;
+      }
+
+      if (totalPrice <= 0) {
+        toast.error("Số tiền không hợp lệ");
+        return;
+      }
+
+      // Redirect to checkout review page using React Router
+      navigate("/checkout-review");
+    } catch (error) {
+      console.error("Navigation error:", error);
+      toast.error("Đã xảy ra lỗi khi chuyển hướng");
+    }
+  };
 
   if (cartItems.length === 0) {
     return (
@@ -91,9 +115,13 @@ const Cart: React.FC = () => {
                   {totalPrice.toLocaleString("vi-VN")} VND
                 </span>
               </div>
-            </div>
-            <button className="w-full bg-blue-900 text-white py-2 rounded-md hover:bg-blue-800 transition-colors mt-4">
-              Tiến hành thanh toán
+            </div>{" "}
+            <button
+              onClick={handlePayment}
+              className="w-full bg-blue-900 text-white py-2 rounded-md hover:bg-blue-800 transition-colors mt-4"
+              disabled={isLoading}
+            >
+              {isLoading ? "Đang xử lý..." : "Thanh toán với VNPay"}
             </button>
           </div>
         </div>

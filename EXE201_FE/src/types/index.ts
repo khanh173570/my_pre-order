@@ -49,7 +49,7 @@ export interface Product {
   originalPrice?: number;
   description: string;
   image: string;
-  quantity: number; // Thêm trường số lượng
+  quantity: number;
 }
 
 export interface CartItem extends Product {

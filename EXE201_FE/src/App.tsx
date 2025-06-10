@@ -16,7 +16,7 @@ import AdminLayout from "./layouts/AdminLayout";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import OTPVerification from "./pages/OTPVerification";
-import HomeCustomer from "./pages/home/HomeCustomer";
+// import HomeCustomer from "./pages/home/HomeCustomer";
 import HomeStaff from "./pages/home/HomeStaff";
 import HomeAdmin from "./pages/home/HomeAdmin";
 import Products from "./pages/Products";
@@ -26,7 +26,10 @@ import Policy from "./pages/Policy";
 import Profile from "./pages/Profile";
 import History from "./pages/History";
 import Cart from "./pages/Cart";
+import CheckoutReview from "./pages/CheckoutReview";
+import PaymentReturn from "./pages/PaymentReturn";
 import { AnimatePresence } from "framer-motion";
+import Result from "./pages/Result";
 
 const App: React.FC = () => {
   return (
@@ -53,6 +56,7 @@ const App: React.FC = () => {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/otp-verification" element={<OTPVerification />} />
+                <Route path="/result" element={<Result />} />
 
                 {/* Customer routes with MainLayout */}
                 <Route element={<MainLayout />}>
@@ -64,15 +68,16 @@ const App: React.FC = () => {
                       <ProtectedRoute
                         allowedRoles={[import.meta.env.VITE_ROLE_CUSTOMER]}
                       >
-                        <HomeCustomer />
+                        <Products />
                       </ProtectedRoute>
                     }
                   />
                   <Route path="/products" element={<Products />} />
                   <Route path="/pre-order" element={<PreOrder />} />
                   <Route path="/pre-order/:id" element={<PreOrderDetail />} />
-                  <Route path="/policy" element={<Policy />} />
+                  <Route path="/policy" element={<Policy />} />{" "}
                   <Route path="/cart" element={<Cart />} />
+                  <Route path="/checkout-review" element={<CheckoutReview />} />
                   <Route
                     path="/profile"
                     element={
@@ -82,7 +87,7 @@ const App: React.FC = () => {
                         <Profile />
                       </ProtectedRoute>
                     }
-                  />
+                  />{" "}
                   <Route
                     path="/history"
                     element={
@@ -90,6 +95,16 @@ const App: React.FC = () => {
                         allowedRoles={[import.meta.env.VITE_ROLE_CUSTOMER]}
                       >
                         <History />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/payment-return"
+                    element={
+                      <ProtectedRoute
+                        allowedRoles={[import.meta.env.VITE_ROLE_CUSTOMER]}
+                      >
+                        <PaymentReturn />
                       </ProtectedRoute>
                     }
                   />

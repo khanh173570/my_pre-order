@@ -1,4 +1,5 @@
 import { PreOrderProduct } from "../types";
+import apiClient from "./apiClient";
 
 // Utility function to reset the cached preorders data
 export const resetCachedPreOrders = (): void => {
@@ -26,27 +27,57 @@ export const getAvailableQuantity = async (
 
 export const fetchPreOrders = async (): Promise<PreOrderProduct[]> => {
   try {
-    // Check if we have cached preorders in localStorage
-    const cachedPreorders = localStorage.getItem("cachedPreorders");
+    // Fetch from API instead of JSON file
+    const response = await apiClient.get("/products/preorders");
 
-    if (cachedPreorders) {
-      return JSON.parse(cachedPreorders);
+    if (response.data.status === "success") {
+      // Transform API data to match PreOrderProduct interface
+      const transformedProducts = response.data.data.map(
+        (product: {
+          _id: string;
+          name: string;
+          image: string;
+          images?: string[];
+          releaseDate: string;
+          description: string;
+          deadline: {
+            hours: number;
+            minutes: number;
+            seconds: number;
+          };
+          currentQuantity: number;
+          targetQuantity: number;
+        }) => ({
+          id: product._id,
+          name: product.name,
+          image: product.image,
+          images: product.images || [product.image],
+          releaseDate: product.releaseDate,
+          description: product.description,
+          deadline: product.deadline,
+          currentQuantity: product.currentQuantity || 0,
+          targetQuantity: product.targetQuantity,
+        })
+      );
+
+      return transformedProducts;
     }
 
-    // If not in localStorage, fetch from the JSON file
-    const response = await fetch("/data/preorders.json");
-    if (!response.ok) {
-      throw new Error("Failed to fetch pre-orders");
-    }
-    const data = await response.json();
-
-    // Cache the preorders data
-    localStorage.setItem("cachedPreorders", JSON.stringify(data.preorders));
-
-    return data.preorders;
+    return [];
   } catch (error) {
     console.error("Error fetching pre-orders:", error);
-    return [];
+    // Fallback to JSON file if API fails
+    try {
+      const response = await fetch("/data/preorders.json");
+      if (!response.ok) {
+        throw new Error("Failed to fetch pre-orders from fallback");
+      }
+      const data = await response.json();
+      return data.preorders;
+    } catch (fallbackError) {
+      console.error("Fallback also failed:", fallbackError);
+      return [];
+    }
   }
 };
 

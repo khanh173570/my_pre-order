@@ -1,0 +1,88 @@
+import React from "react";
+import { useNavigate } from "react-router-dom";
+
+interface ProductCardProps {
+  product: {
+    id: string;
+    name: string;
+    price: number;
+    originalPrice?: number;
+    description: string;
+    image: string;
+    images?: string[];
+    quantity: number;
+  };
+  onViewProduct?: (productId: string) => void;
+}
+
+const ProductCard: React.FC<ProductCardProps> = ({
+  product,
+  onViewProduct,
+}) => {
+  const navigate = useNavigate();
+
+  const handleViewProduct = () => {
+    if (onViewProduct) {
+      onViewProduct(product.id);
+    } else {
+      navigate(`/product/${product.id}`);
+    }
+  };
+
+  return (
+    <div
+      key={product.id}
+      className="bg-white rounded-lg shadow-md overflow-hidden product-card border-2 border-gray-400 flex flex-col"
+    >
+      {" "}
+      {/* Single Image Display */}
+      <div
+        className="w-full h-56 bg-gray-50 overflow-hidden cursor-pointer"
+        onClick={handleViewProduct}
+      >
+        <img
+          src={product.images?.[0] || product.image || "/images/product.webp"}
+          alt={product.name}
+          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+        />
+      </div>
+      <div className="p-4">
+        <h1 className="text-lg text-center font-semibold mb-8 h-8 transition-colors duration-300 hover:text-blue-700">
+          {product.name}
+        </h1>
+        <div className="flex flex-col items-center mb-2">
+          <span className="text-sm font-bold text-blue-900">Giá bán lẻ:</span>
+          {product.originalPrice && (
+            <span className="text-gray-500 line-through">
+              {product.originalPrice.toLocaleString("vi-VN")} VND
+            </span>
+          )}
+          <span className="text-blue-900 text-xl font-semibold transition-all duration-300 hover:text-red-600 hover:scale-110">
+            {product.price.toLocaleString("vi-VN")} VND
+          </span>
+        </div>
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-sm text-gray-600">
+            Còn lại: {product.quantity} sản phẩm
+          </span>
+          {product.quantity < 20 && (
+            <span className="text-sm text-red-500 font-medium animate-pulse">
+              Sắp hết hàng!
+            </span>
+          )}
+        </div>
+        <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+          {product.description}
+        </p>{" "}
+        <button
+          onClick={handleViewProduct}
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
+        >
+          Xem Chi Tiết
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default ProductCard;

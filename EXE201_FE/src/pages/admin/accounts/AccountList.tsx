@@ -18,7 +18,7 @@ const AccountList: React.FC = () => {
     name: "",
     email: "",
     password: "",
-    role: "customer",
+    role: "user",
   });
 
   const fetchAccounts = async (page: number = 1) => {
@@ -105,14 +105,13 @@ const AccountList: React.FC = () => {
       console.error("Error deleting account:", error);
     }
   };
-
   const resetForm = () => {
     setEditingAccount(null);
     setFormData({
       name: "",
       email: "",
       password: "",
-      role: "customer",
+      role: "user",
     });
   };
 
@@ -120,27 +119,25 @@ const AccountList: React.FC = () => {
     resetForm();
     setShowModal(true);
   };
-
   const getRoleColor = (role: string) => {
     switch (role) {
       case "admin":
         return "bg-red-100 text-red-800";
       case "staff":
         return "bg-blue-100 text-blue-800";
-      case "customer":
+      case "user":
         return "bg-green-100 text-green-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
   };
-
   const getRoleText = (role: string) => {
     switch (role) {
       case "admin":
         return "Quản trị viên";
       case "staff":
         return "Nhân viên";
-      case "customer":
+      case "user":
         return "Khách hàng";
       default:
         return role;
@@ -428,12 +425,12 @@ const AccountList: React.FC = () => {
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        role: e.target.value as "customer" | "staff" | "admin",
+                        role: e.target.value as "user" | "staff" | "admin",
                       })
                     }
                     className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   >
-                    <option value="customer">Khách hàng</option>
+                    <option value="user">Khách hàng</option>
                     <option value="staff">Nhân viên</option>
                     <option value="admin">Quản trị viên</option>
                   </select>

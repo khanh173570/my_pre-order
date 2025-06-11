@@ -4,6 +4,7 @@ import { PreOrderProduct } from "../../../types";
 import { fetchPreOrders } from "../../../services/preorder";
 import Pagination from "../../../components/Pagination";
 import { PageTransition } from "../../../components/PageTransition";
+import ImageGallery from "../../../components/ImageGallery";
 
 const ITEMS_PER_PAGE = 10; // Display 8 products per page (2 rows of 4 products)
 
@@ -13,7 +14,6 @@ interface TimerState {
 
 const PreOrder: React.FC = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("pre-order");
   const [products, setProducts] = useState<PreOrderProduct[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [remainingTimes, setRemainingTimes] = useState<TimerState>({});
@@ -42,25 +42,39 @@ const PreOrder: React.FC = () => {
     };
     loadProducts();
   }, []);
-
   // Fetch product images for gallery
   useEffect(() => {
     const fetchProductImages = async () => {
       try {
-        const response = await fetch("/data/products.json");
+        // Fetch from API instead of JSON file
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/products/regular`
+        );
         if (!response.ok) {
           throw new Error("Failed to fetch products");
         }
         const data = await response.json();
-        if (data.products && Array.isArray(data.products)) {
+        if (data.status === "success" && Array.isArray(data.data)) {
           // Get 5 random products for the gallery
-          const shuffled = [...data.products].sort(() => 0.5 - Math.random());
+          const shuffled = [...data.data].sort(() => 0.5 - Math.random());
           const selectedProducts = shuffled.slice(0, 5);
-          const images = selectedProducts.map((product) => product.image);
+          const images = selectedProducts.map((product) =>
+            product.images && product.images.length > 0
+              ? product.images[0]
+              : product.image
+          );
           setGalleryImages(images);
         }
       } catch (error) {
         console.error("Error fetching product images:", error);
+        // Fallback to static images if API fails
+        setGalleryImages([
+          "/images/product.webp",
+          "/images/gundam.png",
+          "/images/bango.jpg",
+          "/images/bango02.jpg",
+          "/images/product.webp",
+        ]);
       }
     };
     fetchProductImages();
@@ -154,15 +168,10 @@ const PreOrder: React.FC = () => {
               key={product.id}
               className="bg-gray-100 rounded-lg shadow-md overflow-hidden product-card border-2 border-gray-400 flex flex-col"
             >
-              <div
-                className="w-full h-56 bg-gray-50 overflow-hidden cursor-pointer"
-                onClick={() => handleViewDetail(product.id)}
-              >
-                {" "}
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="w-full h-full transition-transform duration-300 hover:scale-105 hover:rotate-2"
+              <div onClick={() => handleViewDetail(product.id)}>
+                <ImageGallery
+                  images={product.images || [product.image]}
+                  productName={product.name}
                 />
               </div>{" "}
               <div className="p-4">

@@ -8,7 +8,7 @@ export interface Account {
   _id: string;
   name: string;
   email: string;
-  role: "customer" | "staff" | "admin";
+  role: "user" | "staff" | "admin";
   isVerified: boolean;
   isActive: boolean;
   createdAt: string;
@@ -19,13 +19,13 @@ export interface CreateAccountRequest {
   name: string;
   email: string;
   password: string;
-  role: "customer" | "staff" | "admin";
+  role: "user" | "staff" | "admin";
 }
 
 export interface UpdateAccountRequest {
   name?: string;
   email?: string;
-  role?: "customer" | "staff" | "admin";
+  role?: "user" | "staff" | "admin";
   isActive?: boolean;
 }
 
@@ -35,9 +35,10 @@ export interface ChangePasswordRequest {
 }
 
 export interface ApiResponse<T> {
-  success: boolean;
+  status: string;
   message: string;
   data: T;
+  total?: number;
   pagination?: {
     currentPage: number;
     totalPages: number;

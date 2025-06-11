@@ -3,7 +3,6 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { Search, ShoppingCart, User } from "lucide-react";
 import { useCart } from "../../hooks/useCart";
-import { usePreOrder } from "../../hooks/usePreOrder";
 
 interface HeaderProps {
   isScrolled: boolean;
@@ -12,23 +11,19 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ isScrolled }) => {
   const { isAuthenticated, logout, currentUser } = useAuth();
   const { totalItems, cartItems, totalPrice } = useCart();
-  const { preOrderHistory } = usePreOrder();
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [selectedPreOrder, setSelectedPreOrder] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const cartDropdownRef = useRef<HTMLDivElement>(null);
 
   const handleLogin = () => {
     navigate("/login");
   };
-
   const handleLogout = () => {
     logout();
     navigate("/login");
     setIsDropdownOpen(false);
-    setSelectedPreOrder(null);
   };
 
   useEffect(() => {
@@ -38,7 +33,6 @@ const Header: React.FC<HeaderProps> = ({ isScrolled }) => {
         !dropdownRef.current.contains(event.target as Node)
       ) {
         setIsDropdownOpen(false);
-        setSelectedPreOrder(null);
       }
       if (
         cartDropdownRef.current &&
@@ -206,20 +200,13 @@ const Header: React.FC<HeaderProps> = ({ isScrolled }) => {
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       Profile
-                    </button>
-
+                    </button>{" "}
                     <button
                       onClick={() => navigate("/history")}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
-                      Lịch sử đặt trước
-                      {preOrderHistory.length > 0 && (
-                        <span className="ml-2 bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full">
-                          {preOrderHistory.length}
-                        </span>
-                      )}
+                      Lịch sử đơn hàng
                     </button>
-
                     <div className="border-t border-gray-200">
                       <button
                         onClick={handleLogout}

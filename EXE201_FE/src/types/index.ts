@@ -48,7 +48,8 @@ export interface Product {
   price: number;
   originalPrice?: number;
   description: string;
-  image: string;
+  image: string; // Main image for backward compatibility
+  images?: string[]; // Array of all images
   quantity: number;
 }
 
@@ -59,7 +60,8 @@ export interface CartItem extends Product {
 export interface PreOrderProduct {
   id: string;
   name: string;
-  image: string;
+  image: string; // Main image for backward compatibility
+  images?: string[]; // Array of all images
   releaseDate: string;
   description: string;
   deadline: {

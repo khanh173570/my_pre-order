@@ -9,12 +9,15 @@ export interface Product {
   name: string;
   description: string;
   price: number;
+  originalPrice?: number;
+  status?: "active" | "inactive" | "out_of_stock" | "discontinued";
   category: {
     _id: string;
     name: string;
   };
   stock: number;
   image: string;
+  images?: string[];
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -24,30 +27,38 @@ export interface CreateProductRequest {
   name: string;
   description: string;
   price: number;
+  originalPrice?: number;
+  status?: "active" | "inactive" | "out_of_stock" | "discontinued";
   category: string;
   stock: number;
-  image: string;
+  image?: string;
+  images?: string[];
 }
 
 export interface UpdateProductRequest {
   name?: string;
   description?: string;
   price?: number;
+  originalPrice?: number;
+  status?: "active" | "inactive" | "out_of_stock" | "discontinued";
   category?: string;
   stock?: number;
   image?: string;
+  images?: string[];
   isActive?: boolean;
 }
 
 export interface ApiResponse<T> {
-  success: boolean;
-  message: string;
+  status: string;
+  message?: string;
   data: T;
   pagination?: {
     currentPage: number;
     totalPages: number;
     totalItems: number;
     limit: number;
+    hasNext?: boolean;
+    hasPrev?: boolean;
   };
 }
 
@@ -140,13 +151,12 @@ export const productService = {
     const response = await apiClient.put(`/products/${productId}`, productData);
     return response.data;
   },
-
   // Toggle product status (Admin/Staff)
   toggleProductStatus: async (
     productId: string
   ): Promise<ApiResponse<Product>> => {
     const apiClient = createApiClient();
-    const response = await apiClient.put(
+    const response = await apiClient.patch(
       `/products/${productId}/toggle-status`
     );
     return response.data;
@@ -156,6 +166,60 @@ export const productService = {
   deleteProduct: async (productId: string): Promise<ApiResponse<null>> => {
     const apiClient = createApiClient();
     const response = await apiClient.delete(`/products/${productId}`);
+    return response.data;
+  },
+
+  // Image management functions
+  addProductImage: async (
+    productId: string,
+    imageUrl: string
+  ): Promise<ApiResponse<Product>> => {
+    const apiClient = createApiClient();
+    const response = await apiClient.post(`/products/${productId}/images/add`, {
+      imageUrl,
+    });
+    return response.data;
+  },
+
+  removeProductImage: async (
+    productId: string,
+    imageUrl: string
+  ): Promise<ApiResponse<Product>> => {
+    const apiClient = createApiClient();
+    const response = await apiClient.post(
+      `/products/${productId}/images/remove`,
+      {
+        imageUrl,
+      }
+    );
+    return response.data;
+  },
+
+  reorderProductImages: async (
+    productId: string,
+    imageUrls: string[]
+  ): Promise<ApiResponse<Product>> => {
+    const apiClient = createApiClient();
+    const response = await apiClient.post(
+      `/products/${productId}/images/reorder`,
+      {
+        imageUrls,
+      }
+    );
+    return response.data;
+  },
+
+  setMainProductImage: async (
+    productId: string,
+    imageUrl: string
+  ): Promise<ApiResponse<Product>> => {
+    const apiClient = createApiClient();
+    const response = await apiClient.post(
+      `/products/${productId}/images/set-main`,
+      {
+        imageUrl,
+      }
+    );
     return response.data;
   },
 };

@@ -8,6 +8,7 @@ import {
   deleteUser,
   getProfile,
   updateProfile,
+  toggleAccountStatus,
 } from "../controllers/account.controller.js";
 
 const router = express.Router();
@@ -27,5 +28,13 @@ router
   .get(protect, authorize("admin"), getUserById)
   .put(protect, authorize("admin"), updateUser)
   .delete(protect, authorize("admin"), deleteUser);
+
+// Toggle account status
+router.put(
+  "/:id/toggle-status",
+  protect,
+  authorize("admin"),
+  toggleAccountStatus
+);
 
 export default router;

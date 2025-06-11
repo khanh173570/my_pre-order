@@ -29,6 +29,7 @@ import {
   PaymentReturn,
   Result,
 } from "./pages/customer";
+import ProductDetail from "./pages/customer/product/ProductDetail";
 import HomeCustomer from "./pages/home/HomeCustomer";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import OrderList from "./pages/admin/orders/OrderList";
@@ -83,8 +84,9 @@ const App: React.FC = () => {
                           <HomeCustomer />
                         </ProtectedRoute>
                       }
-                    />
+                    />{" "}
                     <Route path="/products" element={<Products />} />
+                    <Route path="/product/:id" element={<ProductDetail />} />
                     <Route path="/pre-order" element={<PreOrder />} />
                     <Route path="/pre-order/:id" element={<PreOrderDetail />} />
                     <Route path="/policy" element={<Policy />} />{" "}

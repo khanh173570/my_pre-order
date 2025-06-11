@@ -1,4 +1,5 @@
 import User from "../models/user.model.js";
+import Order from "../models/order.model.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
@@ -139,9 +140,7 @@ export const updateUser = async (req, res) => {
     // If password is being updated, hash it
     if (updateData.password) {
       updateData.password = await bcrypt.hash(updateData.password, 12);
-    }
-
-    // Check if email is being updated and not duplicate
+    } // Check if email is being updated and not duplicate
     if (updateData.email) {
       const existingUser = await User.findOne({
         email: updateData.email,
@@ -152,6 +151,25 @@ export const updateUser = async (req, res) => {
           status: "error",
           message: "Email already exists. Please use a different email",
         });
+      }
+    }
+
+    // Check if role is being changed for a user with existing orders
+    if (updateData.role) {
+      const currentUser = await User.findById(id);
+      if (
+        currentUser &&
+        currentUser.role === "user" &&
+        updateData.role !== "user"
+      ) {
+        // Check if user has any orders
+        const userOrders = await Order.findOne({ user: id });
+        if (userOrders) {
+          return res.status(400).json({
+            status: "error",
+            message: "Không thể thay đổi vai trò của người dùng đã có đơn hàng",
+          });
+        }
       }
     }
 
@@ -302,6 +320,37 @@ export const updateProfile = async (req, res) => {
       });
     }
 
+    res.status(400).json({
+      status: "error",
+      message: error.message,
+    });
+  }
+};
+
+// Toggle account status (Admin only)
+export const toggleAccountStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({
+        status: "error",
+        message: "User not found",
+      });
+    }
+
+    user.isActive = !user.isActive;
+    await user.save();
+
+    res.status(200).json({
+      status: "success",
+      message: `Account ${
+        user.isActive ? "activated" : "deactivated"
+      } successfully`,
+      data: user,
+    });
+  } catch (error) {
     res.status(400).json({
       status: "error",
       message: error.message,

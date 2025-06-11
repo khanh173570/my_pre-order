@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { orderService, Order } from "../../../services/admin/order.service";
+import {
+  orderService,
+  Order,
+  UpdateOrderStatusRequest,
+} from "../../../services/admin/order.service";
 import { toast } from "react-toastify";
 
 const OrderList: React.FC = () => {
@@ -36,15 +40,26 @@ const OrderList: React.FC = () => {
   useEffect(() => {
     fetchOrders(currentPage);
   }, [currentPage]);
-
   const handleUpdateStatus = async () => {
     if (!selectedOrder) return;
 
     try {
-      const updateData: any = {};
-      if (statusData.status) updateData.status = statusData.status;
-      if (statusData.paymentStatus)
-        updateData.paymentStatus = statusData.paymentStatus;
+      const updateData: UpdateOrderStatusRequest = {};
+      if (statusData.status) {
+        updateData.status = statusData.status as
+          | "pending"
+          | "processing"
+          | "shipped"
+          | "delivered"
+          | "cancelled";
+      }
+      if (statusData.paymentStatus) {
+        updateData.paymentStatus = statusData.paymentStatus as
+          | "pending"
+          | "completed"
+          | "failed"
+          | "refunded";
+      }
       if (statusData.transactionId)
         updateData.transactionId = statusData.transactionId;
       if (statusData.paymentDate)
@@ -159,17 +174,17 @@ const OrderList: React.FC = () => {
                 <tr key={order._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     #{order._id.slice(-8)}
-                  </td>
+                  </td>{" "}
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
-                      {order.user.name}
+                      {order.user?.name || "N/A"}
                     </div>
                     <div className="text-sm text-gray-500">
-                      {order.user.email}
+                      {order.user?.email || "N/A"}
                     </div>
-                  </td>
+                  </td>{" "}
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {order.totalAmount.toLocaleString("vi-VN")} ₫
+                    {(order.totalAmount || 0).toLocaleString("vi-VN")} ₫
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
@@ -305,26 +320,26 @@ const OrderList: React.FC = () => {
                   <div>
                     <p className="text-sm font-medium text-gray-500">
                       Khách hàng
-                    </p>
+                    </p>{" "}
                     <p className="text-sm text-gray-900">
-                      {selectedOrder.user.name}
+                      {selectedOrder.user?.name || "N/A"}
                     </p>
                     <p className="text-sm text-gray-500">
-                      {selectedOrder.user.email}
+                      {selectedOrder.user?.email || "N/A"}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500">
                       Thông tin giao hàng
-                    </p>
+                    </p>{" "}
                     <p className="text-sm text-gray-900">
-                      {selectedOrder.shippingInfo.fullName}
+                      {selectedOrder.shippingInfo?.fullName || "N/A"}
                     </p>
                     <p className="text-sm text-gray-500">
-                      {selectedOrder.shippingInfo.address}
+                      {selectedOrder.shippingInfo?.address || "N/A"}
                     </p>
                     <p className="text-sm text-gray-500">
-                      {selectedOrder.shippingInfo.phone}
+                      {selectedOrder.shippingInfo?.phone || "N/A"}
                     </p>
                   </div>
                 </div>
@@ -332,27 +347,31 @@ const OrderList: React.FC = () => {
                 <div>
                   <p className="text-sm font-medium text-gray-500 mb-2">
                     Sản phẩm
-                  </p>
+                  </p>{" "}
                   <div className="space-y-2">
-                    {selectedOrder.items.map((item) => (
+                    {selectedOrder.items?.map((item) => (
                       <div
                         key={item._id}
                         className="flex justify-between items-center p-2 bg-gray-50 rounded"
                       >
                         <div>
                           <p className="text-sm font-medium">
-                            {item.product.name}
+                            {item.product?.name || "N/A"}
                           </p>
                           <p className="text-sm text-gray-500">
-                            Số lượng: {item.quantity}
+                            Số lượng: {item.quantity || 0}
                           </p>
                         </div>
                         <p className="text-sm font-medium">
-                          {(item.price * item.quantity).toLocaleString("vi-VN")}{" "}
+                          {(
+                            (item.price || 0) * (item.quantity || 0)
+                          ).toLocaleString("vi-VN")}{" "}
                           ₫
                         </p>
                       </div>
-                    ))}
+                    )) || (
+                      <p className="text-sm text-gray-500">Không có sản phẩm</p>
+                    )}
                   </div>
                 </div>
 
@@ -360,14 +379,18 @@ const OrderList: React.FC = () => {
                   <div className="flex justify-between items-center">
                     <p className="text-sm font-medium text-gray-500">
                       Phí giao hàng:
-                    </p>
+                    </p>{" "}
                     <p className="text-sm text-gray-900">
-                      {selectedOrder.shippingFee.toLocaleString("vi-VN")} ₫
+                      {(selectedOrder.shippingFee || 0).toLocaleString("vi-VN")}{" "}
+                      ₫
                     </p>
                   </div>
                   <div className="flex justify-between items-center text-lg font-medium">
                     <p>Tổng cộng:</p>
-                    <p>{selectedOrder.totalAmount.toLocaleString("vi-VN")} ₫</p>
+                    <p>
+                      {(selectedOrder.totalAmount || 0).toLocaleString("vi-VN")}{" "}
+                      ₫
+                    </p>
                   </div>
                 </div>
               </div>

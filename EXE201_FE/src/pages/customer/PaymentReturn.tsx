@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { PaymentService } from "../services/payment.service";
+import { PaymentService } from "../../services/payment.service";
+import { useCart } from "../../hooks/useCart";
 
 const PaymentReturn: React.FC = () => {
   const [status, setStatus] = useState<"loading" | "success" | "error">(
@@ -9,6 +10,7 @@ const PaymentReturn: React.FC = () => {
   const [message, setMessage] = useState<string>("");
   const location = useLocation();
   const navigate = useNavigate();
+  const { clearCart } = useCart();
 
   useEffect(() => {
     const verifyPayment = async () => {
@@ -26,10 +28,11 @@ const PaymentReturn: React.FC = () => {
 
         // Call API to verify payment
         const response = await PaymentService.handlePaymentReturn(params);
-
         if (response.code === "00") {
           setStatus("success");
           setMessage("Thanh toán thành công!");
+          // Clear cart when payment is successful
+          clearCart();
         } else {
           setStatus("error");
           setMessage(response.message || "Thanh toán thất bại");
@@ -40,9 +43,8 @@ const PaymentReturn: React.FC = () => {
         setMessage("Đã xảy ra lỗi trong quá trình xử lý thanh toán");
       }
     };
-
     verifyPayment();
-  }, [location.search]);
+  }, [location.search, clearCart]);
 
   const handleContinueShopping = () => {
     navigate("/products");

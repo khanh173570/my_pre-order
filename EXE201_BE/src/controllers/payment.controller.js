@@ -2,6 +2,7 @@ import crypto from "crypto";
 import moment from "moment";
 import querystring from "qs";
 import Order from "../models/order.model.js";
+import Product from "../models/product.model.js";
 import dotenv from "dotenv";
 import { sortParams } from "../utils/sortParams.js"; // Assuming you have a utility function for sorting params
 dotenv.config();
@@ -235,10 +236,20 @@ class PaymentController {
 
       if (secureHash === signed) {
         // Get response code
-        const responseCode = vnpParams.vnp_ResponseCode;
-
-        // Payment successful
+        const responseCode = vnpParams.vnp_ResponseCode; // Payment successful
         if (responseCode === "00") {
+          // Get the order details to update product stock
+          const order = await Order.findById(orderId).populate("items.product");
+
+          if (order) {
+            // Update product stock for each item in the order
+            for (const item of order.items) {
+              await Product.findByIdAndUpdate(item.product, {
+                $inc: { stock: -item.quantity },
+              });
+            }
+          }
+
           // Update order status
           await Order.findByIdAndUpdate(orderId, {
             paymentStatus: "completed",

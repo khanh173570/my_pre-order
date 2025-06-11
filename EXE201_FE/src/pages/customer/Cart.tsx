@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useCart } from "../hooks/useCart";
+import { useCart } from "../../hooks/useCart";
 import { MinusCircle, PlusCircle, Trash2 } from "lucide-react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";

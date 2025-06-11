@@ -1,23 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCart } from "../hooks/useCart";
+import { useCart } from "../../hooks/useCart";
 import { toast } from "react-toastify";
-import { PageTransition } from "../components/PageTransition";
-import { PaymentService } from "../services/payment.service";
+import { PageTransition } from "../../components/PageTransition";
+import { PaymentService } from "../../services/payment.service";
 
 // Define interfaces for the component
-interface CartProduct {
-  id: string;
-  name: string;
-  price: number;
-  image: string;
-}
-
-interface CartItem {
-  product: CartProduct;
-  quantity: number;
-}
-
 interface ShippingInfo {
   fullName: string;
   address: string;

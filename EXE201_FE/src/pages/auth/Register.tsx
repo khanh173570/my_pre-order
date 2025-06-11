@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { RegisterFormData } from "../types";
-import { registerUser } from "../services/api";
-import { PageTransition } from "../components/PageTransition";
+import { RegisterFormData } from "../../types";
+import { registerUser } from "../../services/api";
+import { PageTransition } from "../../components/PageTransition";
 import { motion } from "framer-motion";
-import { getValidationErrors } from "../utils/validation";
+import { getValidationErrors } from "../../utils/validation";
 import Swal from "sweetalert2";
 
 const Register: React.FC = () => {

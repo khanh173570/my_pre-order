@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useAuth } from "../hooks/useAuth";
-import { loginUser } from "../services/api";
-import { LoginFormData } from "../types";
-import { PageTransition } from "../components/PageTransition";
+import { useAuth } from "../../hooks/useAuth";
+import { loginUser } from "../../services/api";
+import { LoginFormData } from "../../types";
+import { PageTransition } from "../../components/PageTransition";
 import Swal from "sweetalert2";
 
 const Login: React.FC = () => {

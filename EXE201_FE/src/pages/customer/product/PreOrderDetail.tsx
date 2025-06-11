@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { PreOrderProduct } from "../types";
+import { PreOrderProduct } from "../../../types";
 import {
   fetchPreOrders,
   updatePreOrderQuantity,
   getAvailableQuantity,
-} from "../services/preorder";
-import { useAuth } from "../hooks/useAuth";
-import { usePreOrder } from "../hooks/usePreOrder";
+} from "../../../services/preorder";
+import { useAuth } from "../../../hooks/useAuth";
+import { usePreOrder } from "../../../hooks/usePreOrder";
 
 const PreOrderDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();

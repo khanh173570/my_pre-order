@@ -21,4 +21,7 @@
   right: 0;
   z-index: 50;
   background: white;
+  will-change: transform; /* Cải thiện hiệu suất khi có animation */
+  backface-visibility: hidden; /* Tránh flashing trên một số trình duyệt */
+  -webkit-font-smoothing: subpixel-antialiased; /* Cải thiện render text */
 }

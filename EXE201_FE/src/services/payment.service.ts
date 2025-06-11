@@ -112,11 +112,10 @@ export const PaymentService = {
       throw new Error(response.data.message || "Failed to create payment");
     }
   },
-
   handlePaymentReturn: async (
     queryParams: Record<string, string>
   ): Promise<ReturnPaymentResponse> => {
-    const response = await apiClient.get("/payment/vnpay-return", {
+    const response = await apiClient.get("/payment/payment-return", {
       params: queryParams,
     });
     return response.data;

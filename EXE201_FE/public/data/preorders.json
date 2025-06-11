@@ -2,185 +2,423 @@
   "preorders": [
     {
       "id": "1",
-      "name": "Gundam Astral Phantom",
+      "name": "Gundam Model 1",
       "image": "/images/product.webp",
-      "releaseDate": "18/03/2025",
-      "description": "Khi nó xuất hiện, chỉ có sự lặng quẽn và hủy diệt đằng sau nó thư.",
+      "releaseDate": "07/07/2025",
+      "description": "Mô tả mẫu Gundam số 1 với tính năng đặc biệt và sức mạnh vô song.",
       "deadline": {
-        "hours": 5,
-        "minutes": 1,
-        "seconds": 48
+        "hours": 8,
+        "minutes": 59,
+        "seconds": 32
       },
-      "currentQuantity": 185,
-      "targetQuantity": 230
+      "currentQuantity": 159,
+      "targetQuantity": 252
     },
     {
       "id": "2",
-      "name": "Gundam Titan Breaker",
+      "name": "Gundam Model 2",
       "image": "/images/product.webp",
-      "releaseDate": "18/03/2025",
-      "description": "Luôn qua chiến trường như một cơn gió ma quái, không ai có thể theo kịp.",
+      "releaseDate": "27/11/2025",
+      "description": "Mô tả mẫu Gundam số 2 với tính năng đặc biệt và sức mạnh vô song.",
       "deadline": {
-        "hours": 3,
-        "minutes": 30,
-        "seconds": 0
+        "hours": 12,
+        "minutes": 50,
+        "seconds": 53
       },
-      "currentQuantity": 200,
-      "targetQuantity": 200
+      "currentQuantity": 172,
+      "targetQuantity": 204
     },
     {
       "id": "3",
-      "name": "Gundam Eclipse Nova",
+      "name": "Gundam Model 3",
       "image": "/images/product.webp",
-      "releaseDate": "18/03/2025",
-      "description": "Hồi sinh từ lửa địa ngục, mang theo cơn thịnh nộ của quỷ dữ.",
+      "releaseDate": "18/11/2025",
+      "description": "Mô tả mẫu Gundam số 3 với tính năng đặc biệt và sức mạnh vô song.",
       "deadline": {
-        "hours": 8,
-        "minutes": 15,
-        "seconds": 30
+        "hours": 10,
+        "minutes": 25,
+        "seconds": 33
       },
-      "currentQuantity": 145,
-      "targetQuantity": 250
-    },
-    {
-      "id": "4",
-      "name": "Gundam Celestial Dragon",
-      "image": "/images/product.webp",
-      "releaseDate": "20/06/2025",
-      "description": "Sức mạnh của rồng thiên đường, kết hợp với công nghệ tối tân nhất.",
-      "deadline": {
-        "hours": 12,
-        "minutes": 45,
-        "seconds": 0
-      },
-      "currentQuantity": 75,
-      "targetQuantity": 180
-    },
-    {
-      "id": "5",
-      "name": "Gundam Shadow Reaper",
-      "image": "/images/product.webp",
-      "releaseDate": "15/07/2025",
-      "description": "Như một bóng ma trong đêm tối, lặng lẽ và chết chóc.",
-      "deadline": {
-        "hours": 6,
-        "minutes": 20,
-        "seconds": 15
-      },
-      "currentQuantity": 90,
-      "targetQuantity": 200
-    },
-    {
-      "id": "6",
-      "name": "Gundam Storm Bringer",
-      "image": "/images/product.webp",
-      "releaseDate": "01/08/2025",
-      "description": "Mang theo sức mạnh của bão tố, quét sạch mọi kẻ thù trên đường đi.",
-      "deadline": {
-        "hours": 9,
-        "minutes": 0,
-        "seconds": 0
-      },
-      "currentQuantity": 110,
-      "targetQuantity": 220
-    },
-    {
-      "id": "7",
-      "name": "Gundam Phoenix Rising",
-      "image": "/images/product.webp",
-      "releaseDate": "25/08/2025",
-      "description": "Tái sinh từ tro tàn, mạnh mẽ hơn bao giờ hết.",
-      "deadline": {
-        "hours": 4,
-        "minutes": 55,
-        "seconds": 30
-      },
-      "currentQuantity": 160,
-      "targetQuantity": 230
-    },
-    {
-      "id": "8",
-      "name": "Gundam Frost Giant",
-      "image": "/images/product.webp",
-      "releaseDate": "10/09/2025",
-      "description": "Khổng lồ băng giá, đóng băng mọi thứ trong bán kính tiếp cận.",
-      "deadline": {
-        "hours": 7,
-        "minutes": 30,
-        "seconds": 45
-      },
-      "currentQuantity": 120,
+      "currentQuantity": 83,
       "targetQuantity": 210
     },
     {
-      "id": "9",
-      "name": "Gundam Thunder Knight",
+      "id": "4",
+      "name": "Gundam Model 4",
       "image": "/images/product.webp",
-      "releaseDate": "05/10/2025",
-      "description": "Hiệp sĩ sấm sét, mỗi đòn đánh đều mang theo sức mạnh của tia chớp.",
+      "releaseDate": "06/03/2025",
+      "description": "Mô tả mẫu Gundam số 4 với tính năng đặc biệt và sức mạnh vô song.",
       "deadline": {
-        "hours": 10,
-        "minutes": 15,
-        "seconds": 20
+        "hours": 9,
+        "minutes": 43,
+        "seconds": 5
       },
       "currentQuantity": 170,
-      "targetQuantity": 240
+      "targetQuantity": 239
+    },
+    {
+      "id": "5",
+      "name": "Gundam Model 5",
+      "image": "/images/product.webp",
+      "releaseDate": "28/01/2025",
+      "description": "Mô tả mẫu Gundam số 5 với tính năng đặc biệt và sức mạnh vô song.",
+      "deadline": {
+        "hours": 9,
+        "minutes": 11,
+        "seconds": 29
+      },
+      "currentQuantity": 85,
+      "targetQuantity": 192
+    },
+    {
+      "id": "6",
+      "name": "Gundam Model 6",
+      "image": "/images/product.webp",
+      "releaseDate": "26/09/2025",
+      "description": "Mô tả mẫu Gundam số 6 với tính năng đặc biệt và sức mạnh vô song.",
+      "deadline": {
+        "hours": 1,
+        "minutes": 35,
+        "seconds": 58
+      },
+      "currentQuantity": 178,
+      "targetQuantity": 235
+    },
+    {
+      "id": "7",
+      "name": "Gundam Model 7",
+      "image": "/images/product.webp",
+      "releaseDate": "27/02/2025",
+      "description": "Mô tả mẫu Gundam số 7 với tính năng đặc biệt và sức mạnh vô song.",
+      "deadline": {
+        "hours": 6,
+        "minutes": 53,
+        "seconds": 9
+      },
+      "currentQuantity": 89,
+      "targetQuantity": 214
+    },
+    {
+      "id": "8",
+      "name": "Gundam Model 8",
+      "image": "/images/product.webp",
+      "releaseDate": "21/01/2025",
+      "description": "Mô tả mẫu Gundam số 8 với tính năng đặc biệt và sức mạnh vô song.",
+      "deadline": {
+        "hours": 3,
+        "minutes": 0,
+        "seconds": 11
+      },
+      "currentQuantity": 130,
+      "targetQuantity": 191
+    },
+    {
+      "id": "9",
+      "name": "Gundam Model 9",
+      "image": "/images/product.webp",
+      "releaseDate": "17/04/2025",
+      "description": "Mô tả mẫu Gundam số 9 với tính năng đặc biệt và sức mạnh vô song.",
+      "deadline": {
+        "hours": 6,
+        "minutes": 27,
+        "seconds": 21
+      },
+      "currentQuantity": 72,
+      "targetQuantity": 186
     },
     {
       "id": "10",
-      "name": "Gundam Inferno Blade",
+      "name": "Gundam Model 10",
       "image": "/images/product.webp",
-      "releaseDate": "20/10/2025",
-      "description": "Lưỡi kiếm địa ngục, cắt đứt mọi thứ bằng ngọn lửa vĩnh cửu.",
+      "releaseDate": "30/11/2025",
+      "description": "Mô tả mẫu Gundam số 10 với tính năng đặc biệt và sức mạnh vô song.",
       "deadline": {
-        "hours": 5,
-        "minutes": 45,
-        "seconds": 0
+        "hours": 9,
+        "minutes": 32,
+        "seconds": 47
       },
-      "currentQuantity": 130,
-      "targetQuantity": 200
+      "currentQuantity": 126,
+      "targetQuantity": 221
     },
     {
       "id": "11",
-      "name": "Gundam Quantum Voyager",
+      "name": "Gundam Model 11",
       "image": "/images/product.webp",
-      "releaseDate": "15/11/2025",
-      "description": "Du hành xuyên không-thời gian, với công nghệ lượng tử tiên tiến.",
+      "releaseDate": "05/05/2025",
+      "description": "Mô tả mẫu Gundam số 11 với tính năng đặc biệt và sức mạnh vô song.",
       "deadline": {
-        "hours": 11,
-        "minutes": 11,
-        "seconds": 11
+        "hours": 5,
+        "minutes": 19,
+        "seconds": 36
       },
-      "currentQuantity": 105,
-      "targetQuantity": 190
+      "currentQuantity": 195,
+      "targetQuantity": 239
     },
     {
       "id": "12",
-      "name": "Gundam Terra Guardian",
+      "name": "Gundam Model 12",
       "image": "/images/product.webp",
-      "releaseDate": "01/12/2025",
-      "description": "Người bảo vệ trái đất, với bộ giáp được rèn từ khoáng chất hiếm.",
+      "releaseDate": "11/11/2025",
+      "description": "Mô tả mẫu Gundam số 12 với tính năng đặc biệt và sức mạnh vô song.",
       "deadline": {
-        "hours": 8,
-        "minutes": 40,
-        "seconds": 50
+        "hours": 6,
+        "minutes": 28,
+        "seconds": 39
       },
-      "currentQuantity": 140,
-      "targetQuantity": 230
+      "currentQuantity": 50,
+      "targetQuantity": 253
     },
     {
       "id": "13",
-      "name": "Gundam Cosmic Warrior",
+      "name": "Gundam Model 13",
       "image": "/images/product.webp",
-      "releaseDate": "25/12/2025",
-      "description": "Chiến binh vũ trụ, mang trong mình sức mạnh của các vì sao.",
+      "releaseDate": "26/09/2025",
+      "description": "Mô tả mẫu Gundam số 13 với tính năng đặc biệt và sức mạnh vô song.",
+      "deadline": {
+        "hours": 4,
+        "minutes": 19,
+        "seconds": 55
+      },
+      "currentQuantity": 50,
+      "targetQuantity": 184
+    },
+    {
+      "id": "14",
+      "name": "Gundam Model 14",
+      "image": "/images/product.webp",
+      "releaseDate": "08/12/2025",
+      "description": "Mô tả mẫu Gundam số 14 với tính năng đặc biệt và sức mạnh vô song.",
+      "deadline": {
+        "hours": 1,
+        "minutes": 19,
+        "seconds": 49
+      },
+      "currentQuantity": 176,
+      "targetQuantity": 195
+    },
+    {
+      "id": "15",
+      "name": "Gundam Model 15",
+      "image": "/images/product.webp",
+      "releaseDate": "14/05/2025",
+      "description": "Mô tả mẫu Gundam số 15 với tính năng đặc biệt và sức mạnh vô song.",
+      "deadline": {
+        "hours": 3,
+        "minutes": 38,
+        "seconds": 10
+      },
+      "currentQuantity": 134,
+      "targetQuantity": 207
+    },
+    {
+      "id": "16",
+      "name": "Gundam Model 16",
+      "image": "/images/product.webp",
+      "releaseDate": "29/12/2025",
+      "description": "Mô tả mẫu Gundam số 16 với tính năng đặc biệt và sức mạnh vô song.",
+      "deadline": {
+        "hours": 5,
+        "minutes": 30,
+        "seconds": 23
+      },
+      "currentQuantity": 98,
+      "targetQuantity": 211
+    },
+    {
+      "id": "17",
+      "name": "Gundam Model 17",
+      "image": "/images/product.webp",
+      "releaseDate": "12/09/2025",
+      "description": "Mô tả mẫu Gundam số 17 với tính năng đặc biệt và sức mạnh vô song.",
+      "deadline": {
+        "hours": 5,
+        "minutes": 49,
+        "seconds": 0
+      },
+      "currentQuantity": 69,
+      "targetQuantity": 231
+    },
+    {
+      "id": "18",
+      "name": "Gundam Model 18",
+      "image": "/images/product.webp",
+      "releaseDate": "16/04/2025",
+      "description": "Mô tả mẫu Gundam số 18 với tính năng đặc biệt và sức mạnh vô song.",
+      "deadline": {
+        "hours": 8,
+        "minutes": 19,
+        "seconds": 37
+      },
+      "currentQuantity": 68,
+      "targetQuantity": 248
+    },
+    {
+      "id": "19",
+      "name": "Gundam Model 19",
+      "image": "/images/product.webp",
+      "releaseDate": "02/09/2025",
+      "description": "Mô tả mẫu Gundam số 19 với tính năng đặc biệt và sức mạnh vô song.",
+      "deadline": {
+        "hours": 4,
+        "minutes": 58,
+        "seconds": 59
+      },
+      "currentQuantity": 78,
+      "targetQuantity": 226
+    },
+    {
+      "id": "20",
+      "name": "Gundam Model 20",
+      "image": "/images/product.webp",
+      "releaseDate": "28/10/2025",
+      "description": "Mô tả mẫu Gundam số 20 với tính năng đặc biệt và sức mạnh vô song.",
+      "deadline": {
+        "hours": 10,
+        "minutes": 12,
+        "seconds": 24
+      },
+      "currentQuantity": 63,
+      "targetQuantity": 257
+    },
+    {
+      "id": "21",
+      "name": "Gundam Model 21",
+      "image": "/images/product.webp",
+      "releaseDate": "09/01/2025",
+      "description": "Mô tả mẫu Gundam số 21 với tính năng đặc biệt và sức mạnh vô song.",
+      "deadline": {
+        "hours": 7,
+        "minutes": 25,
+        "seconds": 29
+      },
+      "currentQuantity": 145,
+      "targetQuantity": 195
+    },
+    {
+      "id": "22",
+      "name": "Gundam Model 22",
+      "image": "/images/product.webp",
+      "releaseDate": "09/04/2025",
+      "description": "Mô tả mẫu Gundam số 22 với tính năng đặc biệt và sức mạnh vô song.",
+      "deadline": {
+        "hours": 8,
+        "minutes": 49,
+        "seconds": 23
+      },
+      "currentQuantity": 148,
+      "targetQuantity": 249
+    },
+    {
+      "id": "23",
+      "name": "Gundam Model 23",
+      "image": "/images/product.webp",
+      "releaseDate": "30/12/2025",
+      "description": "Mô tả mẫu Gundam số 23 với tính năng đặc biệt và sức mạnh vô song.",
+      "deadline": {
+        "hours": 10,
+        "minutes": 15,
+        "seconds": 9
+      },
+      "currentQuantity": 120,
+      "targetQuantity": 239
+    },
+    {
+      "id": "24",
+      "name": "Gundam Model 24",
+      "image": "/images/product.webp",
+      "releaseDate": "12/03/2025",
+      "description": "Mô tả mẫu Gundam số 24 với tính năng đặc biệt và sức mạnh vô song.",
+      "deadline": {
+        "hours": 10,
+        "minutes": 43,
+        "seconds": 16
+      },
+      "currentQuantity": 95,
+      "targetQuantity": 187
+    },
+    {
+      "id": "25",
+      "name": "Gundam Model 25",
+      "image": "/images/product.webp",
+      "releaseDate": "15/10/2025",
+      "description": "Mô tả mẫu Gundam số 25 với tính năng đặc biệt và sức mạnh vô song.",
+      "deadline": {
+        "hours": 11,
+        "minutes": 35,
+        "seconds": 3
+      },
+      "currentQuantity": 151,
+      "targetQuantity": 241
+    },
+    {
+      "id": "26",
+      "name": "Gundam Model 26",
+      "image": "/images/product.webp",
+      "releaseDate": "08/05/2025",
+      "description": "Mô tả mẫu Gundam số 26 với tính năng đặc biệt và sức mạnh vô song.",
+      "deadline": {
+        "hours": 3,
+        "minutes": 25,
+        "seconds": 49
+      },
+      "currentQuantity": 196,
+      "targetQuantity": 218
+    },
+    {
+      "id": "27",
+      "name": "Gundam Model 27",
+      "image": "/images/product.webp",
+      "releaseDate": "10/09/2025",
+      "description": "Mô tả mẫu Gundam số 27 với tính năng đặc biệt và sức mạnh vô song.",
+      "deadline": {
+        "hours": 10,
+        "minutes": 41,
+        "seconds": 12
+      },
+      "currentQuantity": 150,
+      "targetQuantity": 181
+    },
+    {
+      "id": "28",
+      "name": "Gundam Model 28",
+      "image": "/images/product.webp",
+      "releaseDate": "22/03/2025",
+      "description": "Mô tả mẫu Gundam số 28 với tính năng đặc biệt và sức mạnh vô song.",
+      "deadline": {
+        "hours": 5,
+        "minutes": 41,
+        "seconds": 17
+      },
+      "currentQuantity": 138,
+      "targetQuantity": 255
+    },
+    {
+      "id": "29",
+      "name": "Gundam Model 29",
+      "image": "/images/product.webp",
+      "releaseDate": "19/12/2025",
+      "description": "Mô tả mẫu Gundam số 29 với tính năng đặc biệt và sức mạnh vô song.",
+      "deadline": {
+        "hours": 10,
+        "minutes": 58,
+        "seconds": 35
+      },
+      "currentQuantity": 84,
+      "targetQuantity": 207
+    },
+    {
+      "id": "30",
+      "name": "Gundam Model 30",
+      "image": "/images/product.webp",
+      "releaseDate": "04/08/2025",
+      "description": "Mô tả mẫu Gundam số 30 với tính năng đặc biệt và sức mạnh vô song.",
       "deadline": {
         "hours": 6,
-        "minutes": 6,
-        "seconds": 6
+        "minutes": 10,
+        "seconds": 39
       },
-      "currentQuantity": 190,
-      "targetQuantity": 260
+      "currentQuantity": 123,
+      "targetQuantity": 202
     }
   ]
 }

@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { Product } from "../types/product";
-import { Category } from "../types/category";
-import { useCart } from "../hooks/useCart";
+import React, { useState } from "react";
+import { Product } from "../../../types/product";
+import { useCart } from "../../../hooks/useCart";
+import { useProducts } from "../../../hooks/useProducts";
 import { toast } from "react-toastify";
-import Pagination from "../components/Pagination";
-import { fetchProducts, fetchCategories } from "../services/product.service";
+import Pagination from "../../../components/Pagination";
+import { PageTransition } from "../../../components/PageTransition";
 
 // Frontend product type that extends backend Product type
 interface UIProduct extends Product {
@@ -13,42 +13,27 @@ interface UIProduct extends Product {
   originalPrice?: number;
 }
 
-const ITEMS_PER_PAGE = 8;
+const ITEMS_PER_PAGE = 10;
 
 const Products: React.FC = () => {
-  const [products, setProducts] = useState<UIProduct[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const {
+    products: contextProducts,
+    categories: contextCategories,
+    isLoading,
+  } = useProducts();
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [activeView, setActiveView] = useState<"all" | "category">("all");
   const { addToCart } = useCart();
 
-  // Load both categories and products
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [categoriesData, productsData] = await Promise.all([
-          fetchCategories(),
-          fetchProducts(),
-        ]);
+  // Transform products to match our frontend model
+  const products: UIProduct[] = contextProducts.map((p) => ({
+    ...p,
+    id: p._id,
+    quantity: p.stock,
+    originalPrice: p.price * 1.1, // Example: original price is 10% more
+  }));
 
-        // Transform products to match our frontend model
-        const adaptedProducts = productsData.map((p) => ({
-          ...p,
-          id: p._id,
-          quantity: p.stock,
-          originalPrice: p.price * 1.1, // Example: original price is 10% more
-        }));
-
-        setCategories(categoriesData);
-        setProducts(adaptedProducts);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        toast.error("Không thể tải dữ liệu sản phẩm");
-      }
-    };
-
-    loadData();
-  }, []);
+  const categories = contextCategories;
 
   // Separate states for pagination of each section
   const [allProductsPage, setAllProductsPage] = useState(1);
@@ -86,13 +71,13 @@ const Products: React.FC = () => {
         <img
           src={product.image}
           alt={product.name}
-          className="w-full h-full object-contain transition-transform duration-300 hover:scale-105 hover:rotate-2"
+          className="w-full h-full  transition-transform duration-300 hover:scale-105 hover:rotate-2"
         />
       </div>
       <div className="p-4">
-        <h3 className="text-lg text-center font-semibold mb-2 transition-colors duration-300 hover:text-blue-700">
+        <h1 className="text-lg text-center font-semibold mb-8 h-8 transition-colors duration-300 hover:text-blue-700">
           {product.name}
-        </h3>
+        </h1>
         <div className="flex flex-col items-center mb-2">
           <span className="text-sm font-bold text-blue-900">Giá bán lẻ:</span>
           {product.originalPrice && (
@@ -197,91 +182,121 @@ const Products: React.FC = () => {
       }
     }
   };
+  // Loading state - chỉ hiển thị khi thực sự đang loading và chưa có dữ liệu
+  if (isLoading && contextProducts.length === 0) {
+    return (
+      <PageTransition>
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex justify-center items-center min-h-[400px]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-900 mx-auto mb-4"></div>
+              <p className="text-gray-600 text-lg">Đang tải sản phẩm...</p>
+            </div>
+          </div>
+        </div>
+      </PageTransition>
+    );
+  }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Navigation Tabs */}
-      <div className="flex justify-center items-center mb-8 mt-8 border-b border-gray-200 text-center">
-        <button
-          onClick={() => setActiveView("all")}
-          className={`px-4 py-2 font-semibold text-lg transition-all duration-200 border-b-2 ${
-            activeView === "all"
-              ? "text-blue-900 border-blue-900"
-              : "text-gray-500 border-transparent hover:text-blue-700 hover:border-blue-700"
-          }`}
-        >
-          Sản phẩm đang bán
-        </button>
-        <button
-          onClick={() => setActiveView("category")}
-          className={`px-4 py-2 font-semibold text-lg transition-all duration-200 border-b-2 ${
-            activeView === "category"
-              ? "text-blue-900 border-blue-900"
-              : "text-gray-500 border-transparent hover:text-blue-700 hover:border-blue-700"
-          }`}
-        >
-          Lựa chọn theo danh mục
-        </button>
-      </div>
-
-      {/* All Products View */}
-      {activeView === "all" && (
-        <div className="w-full">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {currentAllProducts.map(renderProductCard)}
-          </div>
-          {allProductsTotalPages > 1 && (
-            <div className="mt-8">
-              <Pagination
-                currentPage={allProductsPage}
-                totalPages={allProductsTotalPages}
-                onPageChange={handleAllProductsPageChange}
-              />
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Category View */}
-      {activeView === "category" && (
-        <div className="w-full">
-          <div className="mb-6">
-            <select
-              value={selectedCategory}
-              onChange={(e) => {
-                setSelectedCategory(e.target.value);
+    <PageTransition>
+      <div className="container mx-auto px-4 py-8">
+        {/* Navigation Tabs */}
+        <div className="flex justify-center items-center mb-8 mt-8 border-b border-gray-200 text-center">
+          <button
+            onClick={() => setActiveView("all")}
+            className={`px-4 py-2 font-semibold text-lg transition-all duration-200 border-b-2 ${
+              activeView === "all"
+                ? "text-blue-900 border-blue-900"
+                : "text-gray-500 border-transparent hover:text-blue-700 hover:border-blue-700"
+            }`}
+          >
+            Sản phẩm đang bán
+          </button>{" "}
+          <button
+            onClick={() => {
+              setActiveView("category");
+              // Tự động chọn danh mục đầu tiên khi chuyển sang category view
+              if (selectedCategory === "all" && categories.length > 0) {
+                setSelectedCategory(categories[0]._id);
                 setCategoryProductsPage(1);
-              }}
-              className="w-full max-w-xs px-4 py-2 rounded-md border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-white shadow-sm text-gray-700 cursor-pointer hover:border-blue-400 transition-colors duration-200"
-            >
-              <option value="all">Chọn danh mục</option>
-              {categories.map((category) => (
-                <option key={category._id} value={category._id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {selectedCategory !== "all" && (
-            <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {currentCategoryProducts.map(renderProductCard)}
-              </div>
-              {categoryTotalPages > 1 && (
-                <div className="mt-8">
-                  <Pagination
-                    currentPage={categoryProductsPage}
-                    totalPages={categoryTotalPages}
-                    onPageChange={handleCategoryPageChange}
-                  />
-                </div>
-              )}
-            </>
-          )}
+              }
+            }}
+            className={`px-4 py-2 font-semibold text-lg transition-all duration-200 border-b-2 ${
+              activeView === "category"
+                ? "text-blue-900 border-blue-900"
+                : "text-gray-500 border-transparent hover:text-blue-700 hover:border-blue-700"
+            }`}
+          >
+            Lựa chọn theo danh mục
+          </button>
         </div>
-      )}
-    </div>
+        {/* All Products View */}
+        {activeView === "all" && (
+          <div className="w-full">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+              {currentAllProducts.map(renderProductCard)}
+            </div>
+            {allProductsTotalPages > 1 && (
+              <div className="mt-8">
+                <Pagination
+                  currentPage={allProductsPage}
+                  totalPages={allProductsTotalPages}
+                  onPageChange={handleAllProductsPageChange}
+                />
+              </div>
+            )}
+          </div>
+        )}{" "}
+        {/* Category View */}
+        {activeView === "category" && (
+          <div className="w-full">
+            <div className="mb-6">
+              <select
+                value={selectedCategory}
+                onChange={(e) => {
+                  setSelectedCategory(e.target.value);
+                  setCategoryProductsPage(1);
+                }}
+                className="w-full max-w-xs px-4 py-2 rounded-md border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-white shadow-sm text-gray-700 cursor-pointer hover:border-blue-400 transition-colors duration-200"
+              >
+                <option value="all">Chọn danh mục</option>
+                {categories.map((category) => (
+                  <option key={category._id} value={category._id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {selectedCategory !== "all" && (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {currentCategoryProducts.map(renderProductCard)}
+                </div>
+                {categoryTotalPages > 1 && (
+                  <div className="mt-8">
+                    <Pagination
+                      currentPage={categoryProductsPage}
+                      totalPages={categoryTotalPages}
+                      onPageChange={handleCategoryPageChange}
+                    />
+                  </div>
+                )}
+              </>
+            )}
+
+            {selectedCategory === "all" && (
+              <div className="text-center py-8">
+                <p className="text-gray-500 text-lg">
+                  Vui lòng chọn một danh mục để xem sản phẩm
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </PageTransition>
   );
 };
 

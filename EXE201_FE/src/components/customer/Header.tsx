@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../../hooks/useAuth";
 import { Search, ShoppingCart, User } from "lucide-react";
-import { useCart } from "../hooks/useCart";
-import { usePreOrder } from "../hooks/usePreOrder";
+import { useCart } from "../../hooks/useCart";
+import { usePreOrder } from "../../hooks/usePreOrder";
 
 interface HeaderProps {
   isScrolled: boolean;
@@ -51,43 +51,52 @@ const Header: React.FC<HeaderProps> = ({ isScrolled }) => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
   return (
     <header
-      className={`header-fixed transition-all duration-300 ${
+      className={`header-fixed ${
         isScrolled ? "bg-blue-900 shadow-lg" : "bg-transparent"
       }`}
+      style={{ transition: "background-color 0.3s, box-shadow 0.3s" }}
     >
       {/* Top bar */}
       <div className="bg-blue-900 text-white text-center py-2 text-sm">
         Chúng tôi có các sản phẩm chưa từng xuất hiện tại thị trường Việt Nam
       </div>
-
-      {/* Main header */}
+      {/* Main header */}{" "}
       <div
         className={`${
           isScrolled
             ? "bg-blue-900 border-blue-900"
             : "bg-white border-gray-200"
-        }  px-6 border-b transition-all duration-300`}
+        }  px-6 border-b`}
+        style={{ transition: "background-color 0.3s, border-color 0.3s" }}
       >
         <div className="container mx-auto flex flex-wrap justify-between items-center">
-          {/* Logo */}
+          {/* Logo */}{" "}
           <div className="flex items-center">
             <Link
               to="/customer"
               className={`text-2xl font-bold ${
                 isScrolled ? "text-white" : "text-blue-900"
               }`}
+              onClick={(e) => {
+                e.currentTarget.style.opacity = "0.9";
+                setTimeout(() => {
+                  if (e.currentTarget) e.currentTarget.style.opacity = "1";
+                }, 150);
+              }}
             >
               <img
                 src="/images/logo.png"
                 alt="Nhieuthuay"
                 className="h-[100px] w-[100px]"
+                style={{
+                  transform: "translateZ(0)",
+                  backfaceVisibility: "hidden",
+                }}
               />
             </Link>
           </div>
-
           {/* Search bar */}
           <div className="relative w-full md:w-1/3 my-4 md:my-0">
             <input
@@ -106,7 +115,6 @@ const Header: React.FC<HeaderProps> = ({ isScrolled }) => {
               size={20}
             />
           </div>
-
           {/* Navigation */}
           <div className="flex items-center space-x-6">
             <div
@@ -238,50 +246,65 @@ const Header: React.FC<HeaderProps> = ({ isScrolled }) => {
             )}
           </div>
         </div>
-      </div>
-
+      </div>{" "}
       {/* Navigation menu */}
       <nav
         className={`${
           isScrolled ? "bg-blue-900 shadow-md" : "bg-white shadow-sm"
-        } transition-all duration-300`}
+        } py-1`}
+        style={{ transition: "background-color 0.3s, box-shadow 0.3s" }}
       >
         <div className="container mx-auto">
-          <ul className="flex justify-center space-x-8 py-3">
-            <li>
+          <ul className="flex justify-center space-x-4 md:space-x-8">
+            <li className="px-2">
               <Link
                 to="/products"
-                className={`font-medium ${
-                  isScrolled
-                    ? "text-white hover:text-red-100"
-                    : "text-gray-700 hover:text-blue-900"
-                } transition-colors duration-300`}
+                className={`font-medium block py-3 px-4 ${
+                  isScrolled ? "text-white" : "text-gray-700"
+                } focus:outline-none`}
+                style={{ transition: "color 0.2s ease" }}
+                onClick={(e) => {
+                  e.currentTarget.style.opacity = "0.9";
+                  setTimeout(() => {
+                    if (e.currentTarget) e.currentTarget.style.opacity = "1";
+                  }, 150);
+                }}
               >
-                Sản phẩm
+                <span className="relative z-10">Sản phẩm</span>
               </Link>
             </li>
-            <li>
+            <li className="px-2">
               <Link
                 to="/pre-order"
-                className={`font-medium ${
-                  isScrolled
-                    ? "text-white hover:text-red-100"
-                    : "text-gray-700 hover:text-blue-900"
-                } transition-colors duration-300`}
+                className={`font-medium block py-3 px-4 ${
+                  isScrolled ? "text-white" : "text-gray-700"
+                } focus:outline-none`}
+                style={{ transition: "color 0.2s ease" }}
+                onClick={(e) => {
+                  e.currentTarget.style.opacity = "0.9";
+                  setTimeout(() => {
+                    if (e.currentTarget) e.currentTarget.style.opacity = "1";
+                  }, 150);
+                }}
               >
-                Pre-Order
+                <span className="relative z-10">Pre-Order</span>
               </Link>
             </li>
-            <li>
+            <li className="px-2">
               <Link
                 to="/policy"
-                className={`font-medium ${
-                  isScrolled
-                    ? "text-white hover:text-red-100"
-                    : "text-gray-700 hover:text-blue-900"
-                } transition-colors duration-300`}
+                className={`font-medium block py-3 px-4 ${
+                  isScrolled ? "text-white" : "text-gray-700"
+                } focus:outline-none`}
+                style={{ transition: "color 0.2s ease" }}
+                onClick={(e) => {
+                  e.currentTarget.style.opacity = "0.9";
+                  setTimeout(() => {
+                    if (e.currentTarget) e.currentTarget.style.opacity = "1";
+                  }, 150);
+                }}
               >
-                Chính sách
+                <span className="relative z-10">Chính sách</span>
               </Link>
             </li>
           </ul>

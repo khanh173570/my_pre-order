@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
+import Header from "../components/customer/Header";
+// import Footer from "../components/customer/Footer";
 
 const MainLayout: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -23,7 +23,7 @@ const MainLayout: React.FC = () => {
         <div className="absolute inset-0  bg-cover bg-center blur-sm -z-10"></div>
         <Outlet />
       </main>
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 };

@@ -102,13 +102,12 @@ export const categoryService = {
     );
     return response.data;
   },
-
   // Toggle category status (Admin/Staff)
   toggleCategoryStatus: async (
     categoryId: string
   ): Promise<ApiResponse<Category>> => {
     const apiClient = createApiClient();
-    const response = await apiClient.put(
+    const response = await apiClient.patch(
       `/categories/${categoryId}/toggle-status`
     );
     return response.data;

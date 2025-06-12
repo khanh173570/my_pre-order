@@ -42,7 +42,6 @@ const ProductDetail: React.FC = () => {
 
     loadProduct();
   }, [id, navigate]);
-
   const handleAddToCart = () => {
     if (!product) return;
 
@@ -54,10 +53,10 @@ const ProductDetail: React.FC = () => {
       description: product.description,
       image: product.image,
       images: product.images,
-      quantity: quantity,
+      quantity: 1, // This will be ignored since we're passing quantity separately
     };
 
-    addToCart(cartItem, quantity);
+    addToCart(cartItem, quantity); // Pass the selected quantity to addToCart
     toast.success(`Đã thêm ${quantity} ${product.name} vào giỏ hàng`);
   };
 

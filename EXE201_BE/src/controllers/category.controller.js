@@ -11,9 +11,7 @@ export const createCategory = async (req, res) => {
         status: "error",
         message: "Please provide name and description",
       });
-    }
-
-    // Check if category already exists
+    } // Check if category already exists
     const existingCategory = await Category.findOne({ name });
     if (existingCategory) {
       return res.status(400).json({
@@ -22,7 +20,13 @@ export const createCategory = async (req, res) => {
       });
     }
 
-    const category = await Category.create(req.body);
+    // Ensure isActive is set to false when creating a new category
+    const categoryData = {
+      ...req.body,
+      isActive: false,
+    };
+
+    const category = await Category.create(categoryData);
     res.status(201).json({
       status: "success",
       message: "Category created successfully",
@@ -58,7 +62,15 @@ export const createCategory = async (req, res) => {
 
 export const getCategories = async (req, res) => {
   try {
-    const categories = await Category.find();
+    // Check if this is for admin view or public view
+    const query = {};
+
+    // If activeOnly is specified, filter by isActive
+    if (req.query.activeOnly === "true") {
+      query.isActive = true;
+    }
+
+    const categories = await Category.find(query);
     res.status(200).json({
       status: "success",
       data: categories,
@@ -180,6 +192,36 @@ export const getCategoryById = async (req, res) => {
       });
     }
 
+    res.status(400).json({
+      status: "error",
+      message: error.message,
+    });
+  }
+};
+
+export const toggleCategoryStatus = async (req, res) => {
+  try {
+    const category = await Category.findById(req.params.id);
+
+    if (!category) {
+      return res.status(404).json({
+        status: "error",
+        message: "Category not found",
+      });
+    }
+
+    // Toggle the isActive status
+    category.isActive = !category.isActive;
+    await category.save();
+
+    res.status(200).json({
+      status: "success",
+      message: `Category ${
+        category.isActive ? "activated" : "deactivated"
+      } successfully`,
+      data: category,
+    });
+  } catch (error) {
     res.status(400).json({
       status: "error",
       message: error.message,

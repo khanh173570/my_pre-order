@@ -5,6 +5,7 @@ import {
   UpdateOrderStatusRequest,
 } from "../../../services/admin/order.service";
 import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 const OrderList: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -74,9 +75,20 @@ const OrderList: React.FC = () => {
       console.error("Error updating order status:", error);
     }
   };
-
   const handleDeleteOrder = async (orderId: string) => {
-    if (!window.confirm("Bạn có chắc chắn muốn xóa đơn hàng này?")) return;
+    // Use SweetAlert2 instead of window.confirm
+    const result = await Swal.fire({
+      title: "Xác nhận",
+      text: "Bạn có chắc chắn muốn xóa đơn hàng này?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Đồng ý",
+      cancelButtonText: "Hủy",
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
       await orderService.deleteOrder(orderId);
@@ -206,38 +218,40 @@ const OrderList: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {new Date(order.createdAt).toLocaleDateString("vi-VN")}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                    <button
-                      onClick={() => {
-                        setSelectedOrder(order);
-                        setShowDetailModal(true);
-                      }}
-                      className="text-blue-600 hover:text-blue-900"
-                    >
-                      Chi tiết
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSelectedOrder(order);
-                        setStatusData({
-                          status: order.status,
-                          paymentStatus: order.paymentStatus,
-                          transactionId: order.transactionId || "",
-                          paymentDate: order.paymentDate || "",
-                        });
-                        setShowStatusModal(true);
-                      }}
-                      className="text-green-600 hover:text-green-900"
-                    >
-                      Cập nhật
-                    </button>
-                    <button
-                      onClick={() => handleDeleteOrder(order._id)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      Xóa
-                    </button>
+                  </td>{" "}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex flex-wrap justify-start gap-2">
+                      <button
+                        onClick={() => {
+                          setSelectedOrder(order);
+                          setShowDetailModal(true);
+                        }}
+                        className="min-w-[80px] px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                      >
+                        Chi tiết
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedOrder(order);
+                          setStatusData({
+                            status: order.status,
+                            paymentStatus: order.paymentStatus,
+                            transactionId: order.transactionId || "",
+                            paymentDate: order.paymentDate || "",
+                          });
+                          setShowStatusModal(true);
+                        }}
+                        className="min-w-[80px] px-3 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200"
+                      >
+                        Cập nhật
+                      </button>
+                      <button
+                        onClick={() => handleDeleteOrder(order._id)}
+                        className="min-w-[80px] px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200"
+                      >
+                        Xóa
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

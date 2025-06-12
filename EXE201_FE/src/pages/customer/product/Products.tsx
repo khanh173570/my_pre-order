@@ -11,6 +11,7 @@ interface UIProduct extends Product {
   id: string;
   quantity: number;
   originalPrice?: number;
+  status?: "active" | "inactive" | "out_of_stock" | "discontinued";
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -24,13 +25,13 @@ const Products: React.FC = () => {
 
   // Separate states for pagination of each section
   const [allProductsPage, setAllProductsPage] = useState(1);
-  const [categoryProductsPage, setCategoryProductsPage] = useState(1);
-  // Transform products to match our frontend model
+  const [categoryProductsPage, setCategoryProductsPage] = useState(1); // Transform products to match our frontend model
   const products: UIProduct[] = contextProducts.map((p) => ({
     ...p,
     id: p._id,
     quantity: p.stock,
     originalPrice: p.originalPrice, // Use original price from database
+    status: p.status, // Include status field
   }));
 
   const categories = contextCategories;

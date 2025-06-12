@@ -5,7 +5,7 @@ import {
   CreateAccountRequest,
   UpdateAccountRequest,
 } from "../../../services/admin/account.service";
-import { toast } from "react-toastify";
+import { AlertService } from "../../../services/AlertService";
 
 const AccountList: React.FC = () => {
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -13,6 +13,8 @@ const AccountList: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [showModal, setShowModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
   const [formData, setFormData] = useState<CreateAccountRequest>({
     name: "",
@@ -30,7 +32,7 @@ const AccountList: React.FC = () => {
         setTotalPages(response.pagination.totalPages);
       }
     } catch (error) {
-      toast.error("Không thể tải danh sách tài khoản");
+      showError("Không thể tải danh sách tài khoản");
       console.error("Error fetching accounts:", error);
     } finally {
       setIsLoading(false);
@@ -52,17 +54,17 @@ const AccountList: React.FC = () => {
           role: formData.role,
         };
         await accountService.updateAccount(editingAccount._id, updateData);
-        toast.success("Cập nhật tài khoản thành công");
+        showSuccess("Cập nhật tài khoản thành công");
       } else {
         await accountService.createAccount(formData);
-        toast.success("Thêm tài khoản thành công");
+        showSuccess("Thêm tài khoản thành công");
       }
 
       setShowModal(false);
       resetForm();
       fetchAccounts(currentPage);
     } catch (error) {
-      toast.error(
+      showError(
         editingAccount
           ? "Không thể cập nhật tài khoản"
           : "Không thể thêm tài khoản"
@@ -81,27 +83,59 @@ const AccountList: React.FC = () => {
     });
     setShowModal(true);
   };
-
   const handleToggleStatus = async (accountId: string) => {
     try {
+      const account = accounts.find((acc) => acc._id === accountId);
+      const action = account?.isActive ? "khóa" : "mở khóa";
+
       await accountService.toggleAccountStatus(accountId);
-      toast.success("Cập nhật trạng thái tài khoản thành công");
+      showSuccess(`Đã ${action} tài khoản thành công`);
       fetchAccounts(currentPage);
     } catch (error) {
-      toast.error("Không thể cập nhật trạng thái tài khoản");
+      if (error && typeof error === "object" && "response" in error) {
+        const axiosError = error as {
+          response?: { data?: { message?: string } };
+        };
+        showError(
+          axiosError.response?.data?.message ||
+            "Không thể cập nhật trạng thái tài khoản"
+        );
+      } else {
+        showError("Không thể cập nhật trạng thái tài khoản");
+      }
       console.error("Error toggling account status:", error);
     }
   };
-
   const handleDelete = async (accountId: string) => {
-    if (!window.confirm("Bạn có chắc chắn muốn xóa tài khoản này?")) return;
+    // Use SweetAlert2 instead of window.confirm
+    const result = await Swal.fire({
+      title: "Xác nhận",
+      text: "Bạn có chắc chắn muốn xóa tài khoản này?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Đồng ý",
+      cancelButtonText: "Hủy",
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
       await accountService.deleteAccount(accountId);
-      toast.success("Xóa tài khoản thành công");
+      showSuccess("Xóa tài khoản thành công");
       fetchAccounts(currentPage);
     } catch (error) {
-      toast.error("Không thể xóa tài khoản");
+      if (error && typeof error === "object" && "response" in error) {
+        const axiosError = error as {
+          response?: { data?: { message?: string } };
+        };
+        showError(
+          axiosError.response?.data?.message || "Không thể xóa tài khoản"
+        );
+      } else {
+        showError("Không thể xóa tài khoản");
+      }
       console.error("Error deleting account:", error);
     }
   };
@@ -142,6 +176,11 @@ const AccountList: React.FC = () => {
       default:
         return role;
     }
+  };
+
+  const handleViewDetails = (account: Account) => {
+    setSelectedAccount(account);
+    setShowDetailsModal(true);
   };
 
   if (isLoading) {
@@ -240,7 +279,7 @@ const AccountList: React.FC = () => {
                       )}`}
                     >
                       {getRoleText(account.role)}
-                    </span>
+                    </span>{" "}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
@@ -249,8 +288,13 @@ const AccountList: React.FC = () => {
                           ? "bg-green-100 text-green-800"
                           : "bg-red-100 text-red-800"
                       }`}
+                      title={
+                        account.isActive
+                          ? "Tài khoản đang hoạt động bình thường"
+                          : "Tài khoản đã bị khóa và không thể đăng nhập"
+                      }
                     >
-                      {account.isActive ? "Hoạt động" : "Không hoạt động"}
+                      {account.isActive ? "Hoạt động" : "Đã khóa"}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -266,26 +310,49 @@ const AccountList: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {new Date(account.createdAt).toLocaleDateString("vi-VN")}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                    <button
-                      onClick={() => handleEdit(account)}
-                      className="text-blue-600 hover:text-blue-900"
-                    >
-                      Sửa
-                    </button>
-                    <button
-                      onClick={() => handleToggleStatus(account._id)}
-                      className="text-yellow-600 hover:text-yellow-900"
-                    >
-                      {account.isActive ? "Vô hiệu hóa" : "Kích hoạt"}
-                    </button>
-                    <button
-                      onClick={() => handleDelete(account._id)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      Xóa
-                    </button>
+                  </td>{" "}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex flex-wrap justify-start gap-2">
+                      <button
+                        onClick={() => handleEdit(account)}
+                        className="min-w-[80px] px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                      >
+                        Sửa
+                      </button>
+                      <button
+                        onClick={() => handleToggleStatus(account._id)}
+                        className={`min-w-[110px] px-3 py-1 rounded ${
+                          account.isActive
+                            ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
+                            : "bg-green-100 text-green-700 hover:bg-green-200"
+                        }`}
+                        title={
+                          account.isActive
+                            ? "Khóa tài khoản này"
+                            : "Mở khóa tài khoản này"
+                        }
+                      >
+                        {account.isActive ? "Khóa tài khoản" : "Mở khóa"}
+                      </button>
+                      <button
+                        onClick={() => handleDelete(account._id)}
+                        className="min-w-[80px] px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200"
+                        disabled={!account.isActive}
+                        title={
+                          !account.isActive
+                            ? "Không thể xóa tài khoản đã bị khóa"
+                            : ""
+                        }
+                      >
+                        Xóa
+                      </button>
+                      <button
+                        onClick={() => handleViewDetails(account)}
+                        className="min-w-[110px] px-3 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200"
+                      >
+                        Xem chi tiết
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -452,6 +519,94 @@ const AccountList: React.FC = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Account Details Modal */}
+      {showDetailsModal && selectedAccount && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium text-gray-900">
+                  Chi tiết tài khoản
+                </h3>
+                <button
+                  onClick={() => setShowDetailsModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <span className="block text-sm font-medium text-gray-700">
+                    Họ và tên:
+                  </span>
+                  <span className="block text-sm text-gray-900">
+                    {selectedAccount.name}
+                  </span>
+                </div>
+
+                <div>
+                  <span className="block text-sm font-medium text-gray-700">
+                    Email:
+                  </span>
+                  <span className="block text-sm text-gray-900">
+                    {selectedAccount.email}
+                  </span>
+                </div>
+
+                <div>
+                  <span className="block text-sm font-medium text-gray-700">
+                    Vai trò:
+                  </span>
+                  <span className="block text-sm text-gray-900">
+                    {getRoleText(selectedAccount.role)}
+                  </span>
+                </div>
+
+                <div>
+                  <span className="block text-sm font-medium text-gray-700">
+                    Trạng thái:
+                  </span>
+                  <span className="block text-sm text-gray-900">
+                    {selectedAccount.isActive ? "Đang hoạt động" : "Đã khóa"}
+                  </span>
+                </div>
+
+                <div>
+                  <span className="block text-sm font-medium text-gray-700">
+                    Địa chỉ:
+                  </span>
+                  <span className="block text-sm text-gray-900">
+                    {selectedAccount.address || "Chưa cập nhật"}
+                  </span>
+                </div>
+
+                <div>
+                  <span className="block text-sm font-medium text-gray-700">
+                    Số điện thoại:
+                  </span>
+                  <span className="block text-sm text-gray-900">
+                    {selectedAccount.phone || "Chưa cập nhật"}
+                  </span>
+                </div>
+
+                <div>
+                  <span className="block text-sm font-medium text-gray-700">
+                    Ngày tạo:
+                  </span>
+                  <span className="block text-sm text-gray-900">
+                    {new Date(selectedAccount.createdAt).toLocaleDateString(
+                      "vi-VN"
+                    )}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

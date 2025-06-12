@@ -13,12 +13,13 @@ import { toast } from "react-toastify";
 import ConfirmDialog from "../../../components/ConfirmDialog";
 import Pagination from "../../../components/Pagination";
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 7;
 
 const ProductList: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isTableLoading, setIsTableLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [showModal, setShowModal] = useState(false);
@@ -39,20 +40,21 @@ const ProductList: React.FC = () => {
   const [imageUrls, setImageUrls] = useState<string[]>([""]);
   const fetchProducts = async (page: number = 1) => {
     try {
-      setIsLoading(true);
+      if (page === 1) {
+        // Chỉ set loading cho lần load đầu tiên
+        setIsLoading(true);
+      }
+      // Không cần sử dụng setIsTableLoading ở đây, sẽ được xử lý bên ngoài hàm
+
       const response = await productService.getAllProducts(
         page,
         ITEMS_PER_PAGE
       );
-      console.log("Response from productService:", response);
-      console.log("Response pagination:", response.pagination);
 
       setProducts(response.data);
       if (response.pagination) {
-        console.log("Setting totalPages to:", response.pagination.totalPages);
         setTotalPages(response.pagination.totalPages);
       } else {
-        console.log("No pagination found in response, calculating manually");
         // If no pagination info, calculate from data length
         const calculatedTotalPages = Math.ceil(
           response.data.length / ITEMS_PER_PAGE
@@ -63,7 +65,9 @@ const ProductList: React.FC = () => {
       toast.error("Không thể tải danh sách sản phẩm");
       console.error("Error fetching products:", error);
     } finally {
-      setIsLoading(false);
+      if (page === 1) {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -74,11 +78,30 @@ const ProductList: React.FC = () => {
     } catch (error) {
       console.error("Error fetching categories:", error);
     }
-  };
-
+  }; // Fetch categories only once when component mounts
   useEffect(() => {
-    fetchProducts(currentPage);
     fetchCategories();
+  }, []); // Handle fetching products when currentPage changes
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        if (currentPage > 1) {
+          // Nếu không phải trang đầu tiên, chỉ hiển thị loading ở table
+          setIsTableLoading(true);
+        }
+
+        await fetchProducts(currentPage);
+      } catch (error) {
+        console.error("Error in loadProducts:", error);
+      } finally {
+        // Luôn reset loading state sau khi hoàn thành
+        if (currentPage > 1) {
+          setIsTableLoading(false);
+        }
+      }
+    };
+
+    loadProducts();
   }, [currentPage]);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -245,7 +268,7 @@ const ProductList: React.FC = () => {
           </svg>
           <span>Thêm sản phẩm</span>
         </button>
-      </div>
+      </div>{" "}
       {/* Products Table */}
       <div className="bg-white shadow-md rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
@@ -276,95 +299,114 @@ const ProductList: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {products.map((product) => (
-                <tr key={product._id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <img
-                        className="h-10 w-10 rounded-md object-cover"
-                        src={product.image}
-                        alt={product.name}
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src =
-                            "/images/product.webp";
-                        }}
-                      />
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">
-                          {product.name}
-                        </div>
-                        <div className="text-sm text-gray-500 truncate max-w-xs">
-                          {product.description}
-                        </div>
-                      </div>
+              {" "}
+              {isTableLoading ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex justify-center items-center py-4">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                      <span className="ml-2 text-gray-500">
+                        Đang tải dữ liệu...
+                      </span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {product.category.name}
-                  </td>{" "}
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {product.price.toLocaleString("vi-VN")} ₫
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {product.originalPrice
-                      ? `${product.originalPrice.toLocaleString("vi-VN")} ₫`
-                      : "-"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {product.stock}
-                  </td>{" "}
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        product.status === "active"
-                          ? "bg-green-100 text-green-800"
-                          : product.status === "inactive"
-                          ? "bg-gray-100 text-gray-800"
-                          : product.status === "out_of_stock"
-                          ? "bg-red-100 text-red-800"
-                          : product.status === "discontinued"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : product.isActive
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {product.status === "active"
-                        ? "Hoạt động"
-                        : product.status === "inactive"
-                        ? "Không hoạt động"
-                        : product.status === "out_of_stock"
-                        ? "Hết hàng"
-                        : product.status === "discontinued"
-                        ? "Ngừng kinh doanh"
-                        : product.isActive
-                        ? "Hoạt động"
-                        : "Không hoạt động"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-left text-sm font-medium space-x-2">
-                    {" "}
-                    <button
-                      onClick={() => openEditModal(product)}
-                      className="text-blue-600 hover:text-blue-900"
-                    >
-                      Sửa
-                    </button>
-                    <button
-                      onClick={() => handleToggleStatus(product._id)}
-                      className="text-yellow-600 hover:text-yellow-900"
-                    >
-                      {product.isActive ? "Vô hiệu hóa" : "Kích hoạt"}
-                    </button>
-                    <button
-                      onClick={() => handleDelete(product)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      Xóa
-                    </button>
-                  </td>
                 </tr>
-              ))}
+              ) : (
+                products.map((product) => (
+                  <tr key={product._id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <img
+                          className="h-10 w-10 rounded-md object-cover"
+                          src={product.image}
+                          alt={product.name}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src =
+                              "/images/product.webp";
+                          }}
+                        />
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">
+                            {product.name}
+                          </div>
+                          <div className="text-sm text-gray-500 truncate max-w-xs">
+                            {product.description}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {product.category.name}
+                    </td>{" "}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {product.price.toLocaleString("vi-VN")} ₫
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {product.originalPrice
+                        ? `${product.originalPrice.toLocaleString("vi-VN")} ₫`
+                        : "-"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {product.stock}
+                    </td>{" "}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          product.status === "active"
+                            ? "bg-green-100 text-green-800"
+                            : product.status === "inactive"
+                            ? "bg-gray-100 text-gray-800"
+                            : product.status === "out_of_stock"
+                            ? "bg-red-100 text-red-800"
+                            : product.status === "discontinued"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : product.isActive
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {product.status === "active"
+                          ? "Hoạt động"
+                          : product.status === "inactive"
+                          ? "Không hoạt động"
+                          : product.status === "out_of_stock"
+                          ? "Hết hàng"
+                          : product.status === "discontinued"
+                          ? "Ngừng kinh doanh"
+                          : product.isActive
+                          ? "Hoạt động"
+                          : "Không hoạt động"}
+                      </span>
+                    </td>{" "}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex flex-wrap justify-start gap-2">
+                        <button
+                          onClick={() => openEditModal(product)}
+                          className="min-w-[80px] px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                        >
+                          Sửa
+                        </button>
+                        <button
+                          onClick={() => handleToggleStatus(product._id)}
+                          className={`min-w-[110px] px-3 py-1 rounded ${
+                            product.isActive
+                              ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
+                              : "bg-green-100 text-green-700 hover:bg-green-200"
+                          }`}
+                        >
+                          {product.isActive ? "Vô hiệu hóa" : "Kích hoạt"}
+                        </button>
+                        <button
+                          onClick={() => handleDelete(product)}
+                          className="min-w-[80px] px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200"
+                        >
+                          Xóa
+                        </button>
+                      </div>{" "}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>{" "}

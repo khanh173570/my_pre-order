@@ -6,6 +6,7 @@ import {
   UpdateCategoryRequest,
 } from "../../../services/admin/category.service";
 import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 const CategoryList: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -84,9 +85,20 @@ const CategoryList: React.FC = () => {
       console.error("Error toggling category status:", error);
     }
   };
-
   const handleDelete = async (categoryId: string) => {
-    if (!window.confirm("Bạn có chắc chắn muốn xóa danh mục này?")) return;
+    // Use SweetAlert2 instead of window.confirm
+    const result = await Swal.fire({
+      title: "Xác nhận",
+      text: "Bạn có chắc chắn muốn xóa danh mục này?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Đồng ý",
+      cancelButtonText: "Hủy",
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
       await categoryService.deleteCategory(categoryId);
@@ -199,26 +211,32 @@ const CategoryList: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {new Date(category.createdAt).toLocaleDateString("vi-VN")}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                    <button
-                      onClick={() => handleEdit(category)}
-                      className="text-blue-600 hover:text-blue-900"
-                    >
-                      Sửa
-                    </button>
-                    <button
-                      onClick={() => handleToggleStatus(category._id)}
-                      className="text-yellow-600 hover:text-yellow-900"
-                    >
-                      {category.isActive ? "Vô hiệu hóa" : "Kích hoạt"}
-                    </button>
-                    <button
-                      onClick={() => handleDelete(category._id)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      Xóa
-                    </button>
+                  </td>{" "}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex flex-wrap justify-start gap-2">
+                      <button
+                        onClick={() => handleEdit(category)}
+                        className="min-w-[80px] px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                      >
+                        Sửa
+                      </button>
+                      <button
+                        onClick={() => handleToggleStatus(category._id)}
+                        className={`min-w-[110px] px-3 py-1 rounded ${
+                          category.isActive
+                            ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
+                            : "bg-green-100 text-green-700 hover:bg-green-200"
+                        }`}
+                      >
+                        {category.isActive ? "Vô hiệu hóa" : "Kích hoạt"}
+                      </button>
+                      <button
+                        onClick={() => handleDelete(category._id)}
+                        className="min-w-[80px] px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200"
+                      >
+                        Xóa
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -311,8 +329,7 @@ const CategoryList: React.FC = () => {
                     className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Nhập tên danh mục"
                   />
-                </div>
-
+                </div>{" "}
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
                     Mô tả
@@ -328,7 +345,30 @@ const CategoryList: React.FC = () => {
                     placeholder="Nhập mô tả danh mục"
                   />
                 </div>
-
+                {editingCategory && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Trạng thái
+                    </label>
+                    <div className="mt-1 block text-sm">
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          editingCategory.isActive
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {editingCategory.isActive
+                          ? "Hoạt động"
+                          : "Không hoạt động"}
+                      </span>
+                      <p className="text-xs text-gray-500 mt-1">
+                        (Bạn có thể thay đổi trạng thái bằng nút "Kích hoạt"/"Vô
+                        hiệu hóa" trong danh sách)
+                      </p>
+                    </div>
+                  </div>
+                )}
                 <div className="flex justify-end space-x-3 pt-4">
                   <button
                     type="button"

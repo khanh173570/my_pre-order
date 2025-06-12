@@ -6,6 +6,7 @@ import {
   getCategoryById,
   updateCategory,
   deleteCategory,
+  toggleCategoryStatus,
 } from "../controllers/category.controller.js";
 
 const router = express.Router();
@@ -20,5 +21,10 @@ router
   .get(getCategoryById)
   .put(protect, authorize("admin", "staff"), updateCategory)
   .delete(protect, authorize("admin", "staff"), deleteCategory);
+
+// Route to toggle category status
+router
+  .route("/:id/toggle-status")
+  .patch(protect, authorize("admin", "staff"), toggleCategoryStatus);
 
 export default router;

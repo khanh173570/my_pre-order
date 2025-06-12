@@ -65,7 +65,6 @@ const Login: React.FC = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
@@ -80,7 +79,19 @@ const Login: React.FC = () => {
       await login(userData);
       console.log("Login context updated");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      const errorMessage = err instanceof Error ? err.message : "Login failed";
+      setError(errorMessage);
+
+      // Check if the error is about a blocked account
+      if (errorMessage.includes("Tài khoản của bạn đã bị khóa")) {
+        Swal.fire({
+          icon: "error",
+          title: "Tài khoản bị khóa",
+          text: "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên để được hỗ trợ.",
+          confirmButtonColor: "#d33",
+        });
+      }
+
       setIsLoading(false);
     } finally {
       // Don't set loading to false here as it will be handled by useEffect or catch

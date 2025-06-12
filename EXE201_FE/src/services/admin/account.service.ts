@@ -9,6 +9,8 @@ export interface Account {
   name: string;
   email: string;
   role: "user" | "staff" | "admin";
+  phone?: string;
+  address?: string;
   isVerified: boolean;
   isActive: boolean;
   createdAt: string;

@@ -228,6 +228,16 @@ export const deleteUser = async (req, res) => {
       });
     }
 
+    // Check if user has orders
+    const userOrders = await Order.findOne({ user: id });
+    if (userOrders) {
+      return res.status(400).json({
+        status: "error",
+        message:
+          "Không thể xóa tài khoản đã có đơn hàng. Vui lòng vô hiệu hóa tài khoản thay vì xóa.",
+      });
+    }
+
     const user = await User.findByIdAndDelete(id);
     if (!user) {
       return res.status(404).json({
@@ -332,22 +342,45 @@ export const toggleAccountStatus = async (req, res) => {
   try {
     const { id } = req.params;
 
+    // Prevent admin from deactivating themselves
+    if (req.user._id.toString() === id) {
+      return res.status(400).json({
+        status: "error",
+        message: "Không thể thay đổi trạng thái tài khoản của chính mình",
+      });
+    }
+
     const user = await User.findById(id);
     if (!user) {
       return res.status(404).json({
         status: "error",
-        message: "User not found",
+        message: "Không tìm thấy tài khoản",
       });
     }
 
+    // Check if it's the last admin account and trying to deactivate it
+    if (user.role === "admin" && user.isActive) {
+      const adminCount = await User.countDocuments({
+        role: "admin",
+        isActive: true,
+      });
+      if (adminCount <= 1) {
+        return res.status(400).json({
+          status: "error",
+          message: "Không thể khóa tài khoản admin cuối cùng trong hệ thống",
+        });
+      }
+    }
+
+    // Toggle the status
     user.isActive = !user.isActive;
     await user.save();
 
+    const statusMessage = user.isActive ? "mở khóa" : "khóa";
+
     res.status(200).json({
       status: "success",
-      message: `Account ${
-        user.isActive ? "activated" : "deactivated"
-      } successfully`,
+      message: `Tài khoản đã được ${statusMessage} thành công`,
       data: user,
     });
   } catch (error) {

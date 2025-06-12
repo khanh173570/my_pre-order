@@ -118,9 +118,7 @@ export const login = async (req, res) => {
         status: "error",
         message: "Invalid email or password",
       });
-    }
-
-    // Check if email is verified
+    } // Check if email is verified
     if (!user.isVerified) {
       return res.status(401).json({
         status: "error",
@@ -128,6 +126,19 @@ export const login = async (req, res) => {
           "Please verify your email before logging in. Check your inbox for verification OTP.",
         data: {
           needsVerification: true,
+          userId: user._id,
+        },
+      });
+    }
+
+    // Check if account is active
+    if (!user.isActive) {
+      return res.status(401).json({
+        status: "error",
+        message:
+          "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên để được hỗ trợ.",
+        data: {
+          isBlocked: true,
           userId: user._id,
         },
       });

@@ -4,7 +4,8 @@ import apiClient from "./apiClient";
 
 export const fetchCategories = async (): Promise<Category[]> => {
   try {
-    const response = await apiClient.get("/categories");
+    // Use activeOnly=true to only get active categories from the backend
+    const response = await apiClient.get("/categories?activeOnly=true");
     if (
       response.data.status === "success" &&
       Array.isArray(response.data.data)

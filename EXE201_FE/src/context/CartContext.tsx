@@ -8,7 +8,7 @@ interface CartItem extends Product {
 
 interface CartContextProps {
   cartItems: CartItem[];
-  addToCart: (product: Product) => void;
+  addToCart: (product: Product, quantity?: number) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
@@ -70,8 +70,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       console.error("Error saving cart:", error);
     }
   }, [cartItems, getCartKey, isClearing]);
-
-  const addToCart = (product: Product) => {
+  const addToCart = (product: Product, quantity: number = 1) => {
     if (!product || !product.id) {
       console.error("Invalid product:", product);
       return;
@@ -80,15 +79,25 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     setCartItems((prevItems) => {
       const existingItem = prevItems.find((item) => item.id === product.id);
       if (existingItem) {
-        console.log("Updating quantity for existing item:", product.id);
+        console.log(
+          "Updating quantity for existing item:",
+          product.id,
+          "by",
+          quantity
+        );
         return prevItems.map((item) =>
           item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, quantity: item.quantity + quantity }
             : item
         );
       }
-      console.log("Adding new item to cart:", product);
-      return [...prevItems, { ...product, quantity: 1 }];
+      console.log(
+        "Adding new item to cart:",
+        product,
+        "with quantity:",
+        quantity
+      );
+      return [...prevItems, { ...product, quantity: quantity }];
     });
   };
 

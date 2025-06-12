@@ -18,9 +18,17 @@ export const loginUser = async (
       },
       body: JSON.stringify(credentials),
     });
-
     if (!response.ok) {
       const errorData = await response.json();
+
+      // Handle blocked account specifically
+      if (errorData.data && errorData.data.isBlocked) {
+        throw new Error(
+          errorData.message ||
+            "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên để được hỗ trợ."
+        );
+      }
+
       throw new Error(errorData.message || "Login failed");
     }
 

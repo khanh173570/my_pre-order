@@ -114,7 +114,7 @@ export const productService = {
   // Get all products
   getAllProducts: async (
     pageNumber: number = 1,
-    pageSize: number = 10
+    pageSize: number = 99
   ): Promise<ProductResponse> => {
     try {
       const response = await fetch(
@@ -148,7 +148,7 @@ export const productService = {
   // Get booking products (isPreOrder: false)
   getBookingProducts: async (
     pageNumber: number = 1,
-    pageSize: number = 10
+    pageSize: number = 99
   ): Promise<ProductResponse> => {
     try {
       const response = await productService.getAllProducts(
@@ -171,10 +171,36 @@ export const productService = {
     }
   },
 
+  // Get available products (isPreOrder: false and stockQuantity > 0)
+  getAvailableProducts: async (
+    pageNumber: number = 1,
+    pageSize: number = 99
+  ): Promise<ProductResponse> => {
+    try {
+      const response = await productService.getAllProducts(
+        pageNumber,
+        pageSize
+      );
+
+      // Filter products where isPreOrder is false AND stockQuantity > 0
+      const availableProducts = response.data.filter(
+        (product) => !product.isPreOrder && product.stockQuantity > 0
+      );
+
+      return {
+        ...response,
+        data: availableProducts,
+      };
+    } catch (error) {
+      console.error("Error fetching available products:", error);
+      throw error;
+    }
+  },
+
   // Get pre-order products (isPreOrder: true)
   getPreOrderProducts: async (
     pageNumber: number = 1,
-    pageSize: number = 10
+    pageSize: number = 99
   ): Promise<ProductResponse> => {
     try {
       const response = await productService.getAllProducts(
@@ -201,7 +227,7 @@ export const productService = {
   getProductsByCategory: async (
     categoryId: number,
     pageNumber: number = 1,
-    pageSize: number = 10
+    pageSize: number = 99
   ): Promise<ProductResponse> => {
     try {
       const response = await productService.getAllProducts(
@@ -228,7 +254,7 @@ export const productService = {
   getProductsByBrand: async (
     brandId: number,
     pageNumber: number = 1,
-    pageSize: number = 10
+    pageSize: number = 99
   ): Promise<ProductResponse> => {
     try {
       const response = await productService.getAllProducts(

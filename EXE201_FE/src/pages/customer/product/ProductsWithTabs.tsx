@@ -10,7 +10,7 @@ import ProductCard from "../../../components/ProductCard";
 import { useNavigate } from "react-router-dom";
 import Pagination from "../../../components/Pagination";
 
-const ITEMS_PER_PAGE = 12;
+const ITEMS_PER_PAGE = 8;
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
@@ -27,6 +27,7 @@ interface UIProduct {
   images?: string[];
   quantity: number;
   status?: "active" | "inactive" | "out_of_stock" | "discontinued";
+  isPreOrder?: boolean;
 }
 
 const ProductsWithTabs: React.FC = () => {
@@ -59,7 +60,15 @@ const ProductsWithTabs: React.FC = () => {
         try {
           const productsData = await fetchProducts();
           console.log("Products loaded successfully:", productsData);
-          setProducts(productsData);
+          // Filter out pre-order products - only show regular products (isPreOrder: false)
+          const filteredProducts = productsData.filter(
+            (product) => !product.isPreOrder
+          );
+          console.log(
+            "Filtered non-preorder products:",
+            filteredProducts.length
+          );
+          setProducts(filteredProducts);
         } catch (err) {
           console.error("Failed to load products:", err);
         }
@@ -92,7 +101,7 @@ const ProductsWithTabs: React.FC = () => {
   // Convert Product to UIProduct for use with ProductCard component
   const convertToUIProduct = (product: Product): UIProduct => {
     console.log(
-      `Converting product to UI format: ID=${product.id}, Name=${product.productName}`
+      `Converting product to UI format: ID=${product.id}, Name=${product.productName}, isPreOrder=${product.isPreOrder}`
     );
     return {
       id: product.id.toString(),
@@ -108,6 +117,7 @@ const ProductsWithTabs: React.FC = () => {
         product.images || ["/images/product.webp"],
       quantity: product.stockQuantity || product.quantity || 0,
       status: product.isActive ? "active" : "inactive",
+      isPreOrder: product.isPreOrder || false,
     };
   };
 
@@ -174,249 +184,293 @@ const ProductsWithTabs: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto py-12 px-4">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-900 border-solid"></div>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="container mx-auto py-12 px-4">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          <p>{error}</p>
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            <p>{error}</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-12 px-4">
-      <Tab.Group>
-        <Tab.List className="flex space-x-1 rounded-xl bg-blue-900/10 p-1 mb-8">
-          <Tab
-            className={({ selected }: { selected: boolean }) =>
-              classNames(
-                "w-full rounded-lg py-2.5 text-sm font-medium leading-5",
-                "ring-white ring-opacity-60 ring-offset-2 ring-offset-blue-400 focus:outline-none focus:ring-2",
-                selected
-                  ? "bg-white text-blue-900 shadow"
-                  : "text-gray-700 hover:bg-white/[0.12] hover:text-blue-900"
-              )
-            }
-          >
-            Sản phẩm
-          </Tab>
-          <Tab
-            className={({ selected }: { selected: boolean }) =>
-              classNames(
-                "w-full rounded-lg py-2.5 text-sm font-medium leading-5",
-                "ring-white ring-opacity-60 ring-offset-2 ring-offset-blue-400 focus:outline-none focus:ring-2",
-                selected
-                  ? "bg-white text-blue-900 shadow"
-                  : "text-gray-700 hover:bg-white/[0.12] hover:text-blue-900"
-              )
-            }
-          >
-            Danh mục
-          </Tab>
-          <Tab
-            className={({ selected }: { selected: boolean }) =>
-              classNames(
-                "w-full rounded-lg py-2.5 text-sm font-medium leading-5",
-                "ring-white ring-opacity-60 ring-offset-2 ring-offset-blue-400 focus:outline-none focus:ring-2",
-                selected
-                  ? "bg-white text-blue-900 shadow"
-                  : "text-gray-700 hover:bg-white/[0.12] hover:text-blue-900"
-              )
-            }
-          >
-            Thương hiệu
-          </Tab>
-        </Tab.List>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">
+            Tất cả sản phẩm
+          </h1>
+          <p className="text-lg text-gray-600">
+            Tất cả sản phẩm có sẵn (bao gồm cả sản phẩm hết hàng)
+          </p>
+        </div>
 
-        <Tab.Panels className="mt-2">
-          {/* Products Tab */}
-          <Tab.Panel className={classNames("rounded-xl bg-white p-3")}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {" "}
-              {currentPageProducts.map((product) => (
-                <div
-                  key={product.id}
-                  onClick={() => {
-                    console.log(`Clicked on product with ID: ${product.id}`);
-                    handleProductClick(product.id.toString());
-                  }}
-                  className="hover:shadow-lg transition-shadow duration-300"
-                >
-                  <ProductCard product={convertToUIProduct(product)} />
+        <Tab.Group>
+          <Tab.List className="flex space-x-1 rounded-xl bg-blue-900/10 p-1 mb-8">
+            <Tab
+              className={({ selected }: { selected: boolean }) =>
+                classNames(
+                  "w-full rounded-lg py-2.5 text-sm font-medium leading-5",
+                  "ring-white ring-opacity-60 ring-offset-2 ring-offset-blue-400 focus:outline-none focus:ring-2",
+                  selected
+                    ? "bg-white text-blue-900 shadow"
+                    : "text-gray-700 hover:bg-white/[0.12] hover:text-blue-900"
+                )
+              }
+            >
+              Sản phẩm
+            </Tab>
+            <Tab
+              className={({ selected }: { selected: boolean }) =>
+                classNames(
+                  "w-full rounded-lg py-2.5 text-sm font-medium leading-5",
+                  "ring-white ring-opacity-60 ring-offset-2 ring-offset-blue-400 focus:outline-none focus:ring-2",
+                  selected
+                    ? "bg-white text-blue-900 shadow"
+                    : "text-gray-700 hover:bg-white/[0.12] hover:text-blue-900"
+                )
+              }
+            >
+              Danh mục
+            </Tab>
+            <Tab
+              className={({ selected }: { selected: boolean }) =>
+                classNames(
+                  "w-full rounded-lg py-2.5 text-sm font-medium leading-5",
+                  "ring-white ring-opacity-60 ring-offset-2 ring-offset-blue-400 focus:outline-none focus:ring-2",
+                  selected
+                    ? "bg-white text-blue-900 shadow"
+                    : "text-gray-700 hover:bg-white/[0.12] hover:text-blue-900"
+                )
+              }
+            >
+              Thương hiệu
+            </Tab>
+          </Tab.List>
+
+          <Tab.Panels className="mt-2">
+            {" "}
+            {/* Products Tab */}
+            <Tab.Panel className={classNames("rounded-xl bg-white p-3")}>
+              {currentPageProducts.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="text-gray-500 text-lg">
+                    Không có sản phẩm nào trong danh mục này
+                  </div>
                 </div>
-              ))}
-            </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
+                    {currentPageProducts.map((product) => (
+                      <div
+                        key={product.id}
+                        onClick={() => {
+                          console.log(
+                            `Clicked on product with ID: ${product.id}`
+                          );
+                          handleProductClick(product.id.toString());
+                        }}
+                        className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                      >
+                        <ProductCard product={convertToUIProduct(product)} />
+                      </div>
+                    ))}
+                  </div>
 
-            {productsTotalPages > 1 && (
-              <div className="mt-8">
-                <Pagination
-                  currentPage={productsPage}
-                  totalPages={productsTotalPages}
-                  onPageChange={setProductsPage}
-                />
-              </div>
-            )}
-          </Tab.Panel>
-
-          {/* Categories Tab */}
-          <Tab.Panel className={classNames("rounded-xl bg-white p-3")}>
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-4">Danh mục sản phẩm</h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {" "}
-                {categories.map((category) => (
-                  <div
-                    key={category.id}
-                    className={`p-4 border rounded-lg cursor-pointer hover:shadow transition-shadow duration-300 ${
-                      selectedCategoryId === category.id
-                        ? "border-blue-600 bg-blue-50"
-                        : "border-gray-200"
+                  {productsTotalPages > 1 && (
+                    <div className="mt-8">
+                      <Pagination
+                        currentPage={productsPage}
+                        totalPages={productsTotalPages}
+                        onPageChange={setProductsPage}
+                      />
+                    </div>
+                  )}
+                </>
+              )}
+            </Tab.Panel>{" "}
+            {/* Categories Tab */}
+            <Tab.Panel className={classNames("rounded-xl bg-white p-3")}>
+              <div className="mb-8">
+                <h2 className="text-xl font-semibold mb-4">
+                  Danh mục sản phẩm
+                </h2>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setSelectedCategoryId(null)}
+                    className={`px-4 py-2 rounded-full border transition-colors ${
+                      selectedCategoryId === null
+                        ? "bg-blue-600 text-white border-blue-600"
+                        : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
                     }`}
-                    onClick={() =>
-                      setSelectedCategoryId(
-                        selectedCategoryId === category.id ? null : category.id
-                      )
-                    }
                   >
-                    <p className="font-medium text-center">
+                    Tất cả
+                  </button>
+                  {categories.map((category) => (
+                    <button
+                      key={category.id}
+                      onClick={() =>
+                        setSelectedCategoryId(
+                          selectedCategoryId === category.id
+                            ? null
+                            : category.id
+                        )
+                      }
+                      className={`px-4 py-2 rounded-full border transition-colors ${
+                        selectedCategoryId === category.id
+                          ? "bg-blue-600 text-white border-blue-600"
+                          : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                      }`}
+                    >
                       {category.categoryName}
-                    </p>
-                  </div>
-                ))}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            <div className="mt-10">
-              <h3 className="text-xl font-semibold mb-4">
-                {selectedCategoryId === null
-                  ? "Tất cả sản phẩm"
-                  : `Sản phẩm trong danh mục: ${
-                      categories.find((c) => c.id === selectedCategoryId)
-                        ?.categoryName
-                    }`}
-              </h3>
+              <div className="mt-10">
+                <h3 className="text-xl font-semibold mb-4">
+                  {selectedCategoryId === null
+                    ? "Tất cả sản phẩm"
+                    : `Sản phẩm trong danh mục: ${
+                        categories.find((c) => c.id === selectedCategoryId)
+                          ?.categoryName
+                      }`}
+                </h3>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {" "}
-                {currentCategoryProducts.length > 0 ? (
-                  currentCategoryProducts.map((product) => (
-                    <div
-                      key={product.id}
-                      className="hover:shadow-lg transition-shadow duration-300"
-                      onClick={() => {
-                        console.log(
-                          `Clicked on category product with ID: ${product.id}`
-                        );
-                        handleProductClick(product.id.toString());
-                      }}
-                    >
-                      <ProductCard product={convertToUIProduct(product)} />
-                    </div>
-                  ))
-                ) : (
-                  <div className="col-span-full text-center py-12">
-                    <p className="text-gray-500">
+                {currentCategoryProducts.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="text-gray-500 text-lg">
                       Không có sản phẩm nào trong danh mục này
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {categoryProductsTotalPages > 1 && (
-                <div className="mt-8">
-                  <Pagination
-                    currentPage={categoriesPage}
-                    totalPages={categoryProductsTotalPages}
-                    onPageChange={setCategoriesPage}
-                  />
-                </div>
-              )}
-            </div>
-          </Tab.Panel>
-
-          {/* Brands Tab */}
-          <Tab.Panel className={classNames("rounded-xl bg-white p-3")}>
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-4">Thương hiệu</h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {" "}
-                {brands.map((brand) => (
-                  <div
-                    key={brand.id}
-                    className={`p-4 border rounded-lg cursor-pointer hover:shadow transition-shadow duration-300 ${
-                      selectedBrandId === brand.id
-                        ? "border-blue-600 bg-blue-50"
-                        : "border-gray-200"
-                    }`}
-                    onClick={() =>
-                      setSelectedBrandId(
-                        selectedBrandId === brand.id ? null : brand.id
-                      )
-                    }
-                  >
-                    <p className="font-medium text-center">{brand.name}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="mt-10">
-              <h3 className="text-xl font-semibold mb-4">
-                {selectedBrandId === null
-                  ? "Tất cả sản phẩm"
-                  : `Sản phẩm của thương hiệu: ${
-                      brands.find((b) => b.id === selectedBrandId)?.name
-                    }`}
-              </h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {" "}
-                {currentBrandProducts.length > 0 ? (
-                  currentBrandProducts.map((product) => (
-                    <div
-                      key={product.id}
-                      className="hover:shadow-lg transition-shadow duration-300"
-                      onClick={() => {
-                        console.log(
-                          `Clicked on brand product with ID: ${product.id}`
-                        );
-                        handleProductClick(product.id.toString());
-                      }}
-                    >
-                      <ProductCard product={convertToUIProduct(product)} />
                     </div>
-                  ))
-                ) : (
-                  <div className="col-span-full text-center py-12">
-                    <p className="text-gray-500">
-                      Không có sản phẩm nào của thương hiệu này
-                    </p>
                   </div>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
+                      {currentCategoryProducts.map((product) => (
+                        <div
+                          key={product.id}
+                          className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                          onClick={() => {
+                            console.log(
+                              `Clicked on category product with ID: ${product.id}`
+                            );
+                            handleProductClick(product.id.toString());
+                          }}
+                        >
+                          <ProductCard product={convertToUIProduct(product)} />
+                        </div>
+                      ))}
+                    </div>
+
+                    {categoryProductsTotalPages > 1 && (
+                      <div className="mt-8">
+                        <Pagination
+                          currentPage={categoriesPage}
+                          totalPages={categoryProductsTotalPages}
+                          onPageChange={setCategoriesPage}
+                        />
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
-
-              {brandProductsTotalPages > 1 && (
-                <div className="mt-8">
-                  <Pagination
-                    currentPage={brandsPage}
-                    totalPages={brandProductsTotalPages}
-                    onPageChange={setBrandsPage}
-                  />
+            </Tab.Panel>{" "}
+            {/* Brands Tab */}
+            <Tab.Panel className={classNames("rounded-xl bg-white p-3")}>
+              <div className="mb-8">
+                <h2 className="text-xl font-semibold mb-4">Thương hiệu</h2>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setSelectedBrandId(null)}
+                    className={`px-4 py-2 rounded-full border transition-colors ${
+                      selectedBrandId === null
+                        ? "bg-blue-600 text-white border-blue-600"
+                        : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    Tất cả
+                  </button>
+                  {brands.map((brand) => (
+                    <button
+                      key={brand.id}
+                      onClick={() =>
+                        setSelectedBrandId(
+                          selectedBrandId === brand.id ? null : brand.id
+                        )
+                      }
+                      className={`px-4 py-2 rounded-full border transition-colors ${
+                        selectedBrandId === brand.id
+                          ? "bg-blue-600 text-white border-blue-600"
+                          : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                      }`}
+                    >
+                      {brand.name}
+                    </button>
+                  ))}
                 </div>
-              )}
-            </div>
-          </Tab.Panel>
-        </Tab.Panels>
-      </Tab.Group>
+              </div>
+
+              <div className="mt-10">
+                <h3 className="text-xl font-semibold mb-4">
+                  {selectedBrandId === null
+                    ? "Tất cả sản phẩm"
+                    : `Sản phẩm của thương hiệu: ${
+                        brands.find((b) => b.id === selectedBrandId)?.name
+                      }`}
+                </h3>
+
+                {currentBrandProducts.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="text-gray-500 text-lg">
+                      Không có sản phẩm nào của thương hiệu này
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
+                      {currentBrandProducts.map((product) => (
+                        <div
+                          key={product.id}
+                          className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                          onClick={() => {
+                            console.log(
+                              `Clicked on brand product with ID: ${product.id}`
+                            );
+                            handleProductClick(product.id.toString());
+                          }}
+                        >
+                          <ProductCard product={convertToUIProduct(product)} />
+                        </div>
+                      ))}
+                    </div>
+
+                    {brandProductsTotalPages > 1 && (
+                      <div className="mt-8">
+                        <Pagination
+                          currentPage={brandsPage}
+                          totalPages={brandProductsTotalPages}
+                          onPageChange={setBrandsPage}
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </Tab.Panel>
+          </Tab.Panels>
+        </Tab.Group>
+      </div>
     </div>
   );
 };

@@ -1,23 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { Product } from "../../services/product.service";
-import { Category } from "../../services/category.service";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 import Pagination from "../../components/Pagination";
-import { productService } from "../../services/product.service";
-import { categoryService } from "../../services/category.service";
-import { orderService } from "../../services/order.service";
-import { useAuth } from "../../hooks/useAuth";
+import ProductCard from "../../components/ProductCard";
+import { productService, Product } from "../../services/product.service";
+import { categoryService, Category } from "../../services/category.service";
 
 const ITEMS_PER_PAGE = 8;
 
 const PreOrderProducts: React.FC = () => {
+  const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalProducts, setTotalProducts] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const { currentUser, isAuthenticated } = useAuth();
 
   // Load categories and products
   useEffect(() => {
@@ -42,28 +40,47 @@ const PreOrderProducts: React.FC = () => {
     const loadProducts = async () => {
       try {
         setIsLoading(true);
-        let productsData;
+
+        // First get ALL products to see what's available
+        const allProductsResponse = await productService.getAllProducts(1, 99);
+        console.log(
+          "Total products from API:",
+          allProductsResponse.data.length
+        );
+
+        // Get all pre-order products first (without pagination)
+        let filteredProducts = [];
 
         if (selectedCategory === "all") {
-          productsData = await productService.getPreOrderProducts(
-            currentPage,
-            ITEMS_PER_PAGE
+          // Get all pre-order products
+          filteredProducts = allProductsResponse.data.filter(
+            (p) => p.isPreOrder
           );
+          console.log("All pre-order products:", filteredProducts.length);
         } else {
-          // Get products by category first, then filter for pre-order
-          const categoryProducts = await productService.getProductsByCategory(
-            parseInt(selectedCategory),
-            currentPage,
-            ITEMS_PER_PAGE
+          // Filter by category first, then by pre-order status
+          filteredProducts = allProductsResponse.data.filter(
+            (p) => p.categoryId === parseInt(selectedCategory) && p.isPreOrder
           );
-          productsData = {
-            ...categoryProducts,
-            data: categoryProducts.data.filter((p) => p.isPreOrder),
-          };
+          console.log(
+            "Pre-order products in category:",
+            filteredProducts.length
+          );
         }
 
-        setProducts(productsData.data);
-        setTotalProducts(productsData.data.length);
+        // Set total for pagination calculation
+        setTotalProducts(filteredProducts.length);
+
+        // Apply pagination manually
+        const start = (currentPage - 1) * ITEMS_PER_PAGE;
+        const end = start + ITEMS_PER_PAGE;
+        const paginatedProducts = filteredProducts.slice(start, end);
+        console.log(
+          "Pre-order products on current page:",
+          paginatedProducts.length
+        );
+
+        setProducts(paginatedProducts);
       } catch (error) {
         console.error("Error fetching products:", error);
         toast.error("Không thể tải dữ liệu sản phẩm");
@@ -74,61 +91,9 @@ const PreOrderProducts: React.FC = () => {
 
     loadProducts();
   }, [currentPage, selectedCategory]);
-  const handlePreOrder = async (product: Product) => {
-    if (!isAuthenticated) {
-      toast.error("Vui lòng đăng nhập để đặt pre-order");
-      return;
-    }
 
-    try {
-      const preOrderData = {
-        shippingFee: 50000, // Default shipping fee
-        items: [
-          {
-            productId: product.id,
-            productName: product.productName,
-            price:
-              product.discountedPrice > 0
-                ? product.discountedPrice
-                : product.price,
-            quantity: 1,
-          },
-        ],
-      };
-
-      const response = await orderService.createPreOrder(preOrderData);
-
-      if (response.succeeded) {
-        // Calculate deposit amount (30% of total)
-        const depositAmount = response.data.depositPrice;
-
-        // Create payment URL for deposit
-        const paymentResponse = await orderService.createPaymentUrl(
-          depositAmount,
-          `Deposit for pre-order ${product.productName}`,
-          response.data.tempOrderId,
-          "VNPAYQR"
-        );
-
-        // Redirect to payment
-        window.location.href = paymentResponse.paymentUrl;
-      } else {
-        toast.error(response.message || "Không thể tạo pre-order");
-      }
-    } catch (error) {
-      console.error("Error creating pre-order:", error);
-      toast.error("Không thể tạo pre-order");
-    }
-  };
-
+  // Calculate pagination
   const totalPages = Math.ceil(totalProducts / ITEMS_PER_PAGE);
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(price);
-  };
 
   if (isLoading) {
     return (
@@ -202,65 +167,29 @@ const PreOrderProducts: React.FC = () => {
                 key={product.id}
                 className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
               >
-                <div className="relative">
-                  <img
-                    src={product.image || "/images/product.webp"}
-                    alt={product.productName}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="absolute top-2 left-2">
-                    <span className="bg-purple-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-                      PRE-ORDER
-                    </span>
-                  </div>
-                  {product.discount > 0 && (
-                    <div className="absolute top-2 right-2">
-                      <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-                        -{product.discount}%
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="p-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
-                    {product.productName}
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                    {product.description}
-                  </p>
-
-                  <div className="mb-4">
-                    {product.discountedPrice > 0 ? (
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg font-bold text-red-600">
-                          {formatPrice(product.discountedPrice)}
-                        </span>
-                        <span className="text-sm text-gray-500 line-through">
-                          {formatPrice(product.price)}
-                        </span>
-                      </div>
-                    ) : (
-                      <span className="text-lg font-bold text-gray-900">
-                        {formatPrice(product.price)}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Product Info */}
-                  <div className="text-xs text-gray-500 mb-4 space-y-1">
-                    <div>Size: {product.size}</div>
-                    <div>Type: {product.type}</div>
-                    <div>Stock: {product.stockQuantity}</div>
-                  </div>
-
-                  <button
-                    onClick={() => handlePreOrder(product)}
-                    className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors font-medium"
-                  >
-                    Đặt Pre-Order
-                  </button>
-                </div>
+                <ProductCard
+                  product={{
+                    id: product.id.toString(),
+                    name: product.productName || "",
+                    price:
+                      product.discountedPrice > 0
+                        ? product.discountedPrice
+                        : product.price,
+                    originalPrice: product.price,
+                    description: product.description || "",
+                    image:
+                      product.productAssets?.[0]?.imageUrl ||
+                      product.image ||
+                      "/images/product.webp",
+                    images: product.productAssets?.map(
+                      (asset) => asset.imageUrl
+                    ) || ["/images/product.webp"],
+                    quantity: product.stockQuantity || 0,
+                    status: "active" as const,
+                    isPreOrder: true,
+                  }}
+                  onViewProduct={(id) => navigate(`/product/${id}`)}
+                />
               </div>
             ))}
           </div>

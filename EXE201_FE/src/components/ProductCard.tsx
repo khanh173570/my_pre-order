@@ -12,6 +12,7 @@ interface ProductCardProps {
     images?: string[];
     quantity: number;
     status?: "active" | "inactive" | "out_of_stock" | "discontinued";
+    isPreOrder?: boolean;
   };
   onViewProduct?: (productId: string) => void;
 }
@@ -26,6 +27,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const isOutOfStock = () => {
     return product.quantity === 0 || product.status === "out_of_stock";
   };
+
   const handleViewProduct = () => {
     console.log(`View product clicked for ID: ${product.id}`);
     if (onViewProduct) {
@@ -40,23 +42,28 @@ const ProductCard: React.FC<ProductCardProps> = ({
       key={product.id}
       className="bg-white rounded-lg shadow-md overflow-hidden product-card border-2 border-gray-400 flex flex-col"
     >
-      {" "}
-      {/* Single Image Display */}{" "}
+      {/* Single Image Display */}
       <div
         className="w-full h-56 bg-gray-50 overflow-hidden cursor-pointer relative"
         onClick={handleViewProduct}
       >
-        {" "}
         <img
           src={product.images?.[0] || product.image || "/images/product.webp"}
           alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+          className="w-full h-full object-contain transition-transform duration-300 hover:scale-105"
         />
         {isOutOfStock() && (
           <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
             <div className="bg-red-600 text-white font-bold py-2 px-4 rounded-full transform rotate-12 shadow-lg border-2 border-white uppercase text-lg">
               SOLD OUT
             </div>
+          </div>
+        )}
+        {product.isPreOrder && (
+          <div className="absolute top-2 left-2">
+            <span className="bg-purple-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+              PRE-ORDER
+            </span>
           </div>
         )}
       </div>
@@ -74,7 +81,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <span className="text-blue-900 text-2xl font-semibold transition-all duration-300 hover:text-red-600 hover:scale-110">
             {product.price.toLocaleString("vi-VN")} VND
           </span>
-        </div>{" "}
+        </div>
         <div className="flex justify-between items-center mb-2">
           <span className="text-sm text-gray-600">
             {!isOutOfStock() ? (
@@ -96,16 +103,22 @@ const ProductCard: React.FC<ProductCardProps> = ({
         </div>
         <p className="text-gray-600 text-sm mb-4 line-clamp-2">
           {product.description}
-        </p>{" "}
+        </p>
         <button
           onClick={handleViewProduct}
           className={`w-full py-2 px-4 rounded-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 ${
-            isOutOfStock()
+            product.isPreOrder
+              ? "bg-purple-600 hover:bg-purple-700 text-white"
+              : isOutOfStock()
               ? "bg-gray-600 hover:bg-gray-700 text-white"
               : "bg-blue-600 hover:bg-blue-700 text-white"
           }`}
         >
-          {isOutOfStock() ? "Xem Chi Tiết (Hết Hàng)" : "Xem Chi Tiết"}
+          {product.isPreOrder
+            ? "Đặt Pre-Order"
+            : isOutOfStock()
+            ? "Xem Chi Tiết (Hết Hàng)"
+            : "Xem Chi Tiết"}
         </button>
       </div>
     </div>

@@ -12,6 +12,7 @@ interface UIProduct extends Product {
   quantity: number;
   originalPrice?: number;
   status?: "active" | "inactive" | "out_of_stock" | "discontinued";
+  isPreOrder?: boolean; // Add isPreOrder field
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -32,6 +33,7 @@ const Products: React.FC = () => {
     quantity: p.stock,
     originalPrice: p.originalPrice, // Use original price from database
     status: p.status, // Include status field
+    isPreOrder: p.isPreOrder || false, // Include isPreOrder field with default value
   }));
 
   const categories = contextCategories;

@@ -25,7 +25,6 @@ import {
   History,
   Cart,
   CheckoutReview,
-  PaymentReturn,
   Result,
 } from "./pages/customer";
 import HomeCustomer from "./pages/home/HomeCustomer";
@@ -37,7 +36,7 @@ import { BrandList } from "./pages/admin/brands";
 import AccountList from "./pages/admin/accounts/AccountList";
 import BookingProducts from "./pages/customer/BookingProducts";
 import PreOrderProducts from "./pages/customer/PreOrderProducts";
-
+import ProductsWithTabs from "./pages/customer/product/ProductsWithTabs";
 const App: React.FC = () => {
   return (
     <AuthProvider>
@@ -80,8 +79,7 @@ const App: React.FC = () => {
                       path="/customer"
                       element={
                         <ProtectedRoute
-                          allowedRoles={[]}
-                          //  allowedRoles={[import.meta.env.VITE_ROLE_CUSTOMER]}
+                          allowedRoles={[import.meta.env.VITE_ROLE_CUSTOMER]}
                         >
                           <HomeCustomer />
                         </ProtectedRoute>
@@ -118,12 +116,12 @@ const App: React.FC = () => {
                       }
                     />
                     <Route
-                      path="/payment-return"
+                      path="/product-all"
                       element={
                         <ProtectedRoute
                           allowedRoles={[import.meta.env.VITE_ROLE_CUSTOMER]}
                         >
-                          <PaymentReturn />
+                          <ProductsWithTabs />
                         </ProtectedRoute>
                       }
                     />

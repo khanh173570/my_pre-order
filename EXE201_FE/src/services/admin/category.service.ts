@@ -1,122 +1,116 @@
-import axios from "axios";
+import {
+  categoryService as baseCategoryService,
+  Category,
+  CreateCategoryData,
+  UpdateCategoryData,
+  CategoryResponse,
+  CategoryCreateResponse,
+} from "../category.service";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
-
-// Types for Category
-export interface Category {
-  _id: string;
-  name: string;
-  description: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CreateCategoryRequest {
-  name: string;
-  description: string;
-}
-
-export interface UpdateCategoryRequest {
-  name?: string;
-  description?: string;
-  isActive?: boolean;
-}
+// Export types for admin use
+export type CreateCategoryRequest = CreateCategoryData;
+export type UpdateCategoryRequest = UpdateCategoryData;
 
 export interface ApiResponse<T> {
-  success: boolean;
-  message: string;
+  status: string;
+  message?: string;
   data: T;
   pagination?: {
     currentPage: number;
     totalPages: number;
     totalItems: number;
     limit: number;
+    hasNext?: boolean;
+    hasPrev?: boolean;
   };
 }
 
-// Create axios instance with auth header
-const createApiClient = () => {
-  const authData = localStorage.getItem("auth");
-  let token = "";
-
-  if (authData) {
-    try {
-      const auth = JSON.parse(authData);
-      token = auth.token || "";
-    } catch (error) {
-      console.error("Error parsing auth data:", error);
-    }
-  }
-
-  return axios.create({
-    baseURL: API_BASE_URL,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-  });
-};
-
-export const categoryService = {
+export const adminCategoryService = {
   // Get all categories
-  getAllCategories: async (
-    page: number = 1,
-    limit: number = 10
-  ): Promise<ApiResponse<Category[]>> => {
-    const apiClient = createApiClient();
-    const response = await apiClient.get(
-      `/categories?page=${page}&limit=${limit}`
-    );
-    return response.data;
+  getAllCategories: async (): Promise<ApiResponse<Category[]>> => {
+    const response = await baseCategoryService.getAllCategories();
+
+    return {
+      status: "success",
+      message: response.message || undefined,
+      data: response.data,
+      pagination: {
+        currentPage: response.pageNumber,
+        totalPages: 1,
+        totalItems: response.data.length,
+        limit: response.pageSize,
+      },
+    };
   },
 
-  // Get category by ID
-  getCategoryById: async (
-    categoryId: string
-  ): Promise<ApiResponse<Category>> => {
-    const apiClient = createApiClient();
-    const response = await apiClient.get(`/categories/${categoryId}`);
-    return response.data;
-  },
-
-  // Create new category (Admin/Staff)
+  // Create category
   createCategory: async (
     categoryData: CreateCategoryRequest
   ): Promise<ApiResponse<Category>> => {
-    const apiClient = createApiClient();
-    const response = await apiClient.post("/categories", categoryData);
-    return response.data;
+    const response = await baseCategoryService.createCategory(categoryData);
+
+    if (response.succeeded) {
+      // For now, return a mock category object since API only returns ID
+      const newCategory: Category = {
+        id: response.data,
+        categoryName: categoryData.categoryName,
+        description: categoryData.description,
+      };
+
+      return {
+        status: "success",
+        message: response.message,
+        data: newCategory,
+      };
+    } else {
+      throw new Error(response.message);
+    }
   },
 
-  // Update category (Admin/Staff)
+  // Update category
   updateCategory: async (
     categoryId: string,
     categoryData: UpdateCategoryRequest
   ): Promise<ApiResponse<Category>> => {
-    const apiClient = createApiClient();
-    const response = await apiClient.put(
-      `/categories/${categoryId}`,
-      categoryData
-    );
-    return response.data;
-  },
-  // Toggle category status (Admin/Staff)
-  toggleCategoryStatus: async (
-    categoryId: string
-  ): Promise<ApiResponse<Category>> => {
-    const apiClient = createApiClient();
-    const response = await apiClient.patch(
-      `/categories/${categoryId}/toggle-status`
-    );
-    return response.data;
+    const updateData: UpdateCategoryData = {
+      ...categoryData,
+      id: parseInt(categoryId),
+    };
+
+    const response = await baseCategoryService.updateCategory(updateData);
+
+    if (response.succeeded) {
+      // Return updated category object
+      const updatedCategory: Category = {
+        id: response.data,
+        categoryName: updateData.categoryName,
+        description: updateData.description,
+      };
+
+      return {
+        status: "success",
+        message: response.message,
+        data: updatedCategory,
+      };
+    } else {
+      throw new Error(response.message);
+    }
   },
 
-  // Delete category (Admin only)
+  // Delete category
   deleteCategory: async (categoryId: string): Promise<ApiResponse<null>> => {
-    const apiClient = createApiClient();
-    const response = await apiClient.delete(`/categories/${categoryId}`);
-    return response.data;
+    const response = await baseCategoryService.deleteCategory(
+      parseInt(categoryId)
+    );
+
+    return {
+      status: response.succeeded ? "success" : "error",
+      message: response.message,
+      data: null,
+    };
   },
 };
+
+// Export the service as categoryService for backward compatibility
+export const categoryService = adminCategoryService;
+export type { Category };

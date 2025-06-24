@@ -3,13 +3,15 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { Search, ShoppingCart, User } from "lucide-react";
 import { useCart } from "../../hooks/useCart";
+import { toast } from "react-toastify";
 
 interface HeaderProps {
   isScrolled: boolean;
 }
 
 const Header: React.FC<HeaderProps> = ({ isScrolled }) => {
-  const { isAuthenticated, logout, currentUser } = useAuth();
+  const { isAuthenticated, logout, currentUser, userProfile, refreshProfile } =
+    useAuth();
   const { totalItems, cartItems, totalPrice } = useCart();
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -180,6 +182,7 @@ const Header: React.FC<HeaderProps> = ({ isScrolled }) => {
 
             {isAuthenticated ? (
               <div className="relative" ref={dropdownRef}>
+                {" "}
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className={`flex items-center ${
@@ -188,9 +191,41 @@ const Header: React.FC<HeaderProps> = ({ isScrolled }) => {
                       : "text-gray-700 hover:text-blue-900"
                   } transition-colors duration-300`}
                 >
-                  <User size={24} />
-                  <span className="ml-2">
-                    Welcome, {currentUser?.userName || "User"}
+                  <User size={24} />{" "}
+                  <span className="ml-2 flex items-center">
+                    Welcome,{" "}
+                    <span className="font-medium ml-1">
+                      {userProfile?.firstName ||
+                        currentUser?.data?.user?.firstName ||
+                        currentUser?.firstName ||
+                        "User"}
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        refreshProfile();
+                        toast.info("Refreshing profile...");
+                      }}
+                      className="ml-2 text-xs p-1 rounded-full hover:bg-blue-100 transition-colors"
+                      title="Refresh profile"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M21 2v6h-6"></path>
+                        <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+                        <path d="M3 22v-6h6"></path>
+                        <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+                      </svg>
+                    </button>
                   </span>
                 </button>
                 {isDropdownOpen && (
@@ -243,7 +278,8 @@ const Header: React.FC<HeaderProps> = ({ isScrolled }) => {
       >
         <div className="container mx-auto">
           <ul className="flex justify-center space-x-4 md:space-x-8">
-            <li className="px-2">
+            {" "}
+            {/* <li className="px-2">
               <Link
                 to="/products"
                 className={`font-medium block py-3 px-4 ${
@@ -257,7 +293,41 @@ const Header: React.FC<HeaderProps> = ({ isScrolled }) => {
                   }, 150);
                 }}
               >
-                <span className="relative z-10">Sản phẩm</span>
+                <span className="relative z-10">Tất cả sản phẩm</span>
+              </Link>
+            </li> */}
+            <li className="px-2">
+              <Link
+                to="/booking-products"
+                className={`font-medium block py-3 px-4 ${
+                  isScrolled ? "text-white" : "text-gray-700"
+                } focus:outline-none`}
+                style={{ transition: "color 0.2s ease" }}
+                onClick={(e) => {
+                  e.currentTarget.style.opacity = "0.9";
+                  setTimeout(() => {
+                    if (e.currentTarget) e.currentTarget.style.opacity = "1";
+                  }, 150);
+                }}
+              >
+                <span className="relative z-10">Sản phẩm có sẵn</span>
+              </Link>
+            </li>
+            <li className="px-2">
+              <Link
+                to="/pre-order-products"
+                className={`font-medium block py-3 px-4 ${
+                  isScrolled ? "text-white" : "text-gray-700"
+                } focus:outline-none`}
+                style={{ transition: "color 0.2s ease" }}
+                onClick={(e) => {
+                  e.currentTarget.style.opacity = "0.9";
+                  setTimeout(() => {
+                    if (e.currentTarget) e.currentTarget.style.opacity = "1";
+                  }, 150);
+                }}
+              >
+                <span className="relative z-10">Pre-Order</span>
               </Link>
             </li>
             <li className="px-2">

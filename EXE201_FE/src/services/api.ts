@@ -11,53 +11,82 @@ export const loginUser = async (
   credentials: LoginFormData
 ): Promise<AuthResponse> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+    const response = await fetch(`${API_BASE_URL}/Auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(credentials),
     });
+
     if (!response.ok) {
       const errorData = await response.json();
-
-      // Handle blocked account specifically
-      if (errorData.data && errorData.data.isBlocked) {
-        throw new Error(
-          errorData.message ||
-            "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên để được hỗ trợ."
-        );
-      }
-
       throw new Error(errorData.message || "Login failed");
     }
 
     const data = await response.json();
     console.log("Login API Response:", data);
 
-    if (data.status !== "success") {
+    if (!data.succeeded) {
       throw new Error(data.message || "Login failed");
     }
 
-    // Transform the response to match our AuthResponse interface
-    const authResponse: AuthResponse = {
-      status: data.status,
-      message: data.message,
-      token: data.token,
-      user: data.user,
-      // Add backward compatibility fields
-      id: data.user.id,
-      userName: data.user.name,
-      roleName: data.user.role,
-    };
+    // Transform the response to match our application's expectations
+    const authResponse: AuthResponse = data;
+    // Add backward compatibility fields
+    authResponse.token = data.data.accessToken;
+    authResponse.status = data.succeeded ? "success" : "error";
 
     // Save auth data to localStorage
     localStorage.setItem("auth", JSON.stringify(authResponse));
+    localStorage.setItem("token", data.data.accessToken);
     console.log("Login successful:", authResponse);
 
     return authResponse;
   } catch (error) {
     console.error("Login error:", error);
+    throw error;
+  }
+};
+
+export const loginWithGoogle = async (
+  idToken: string
+): Promise<AuthResponse> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/Auth/google-login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ idToken }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Google login failed");
+    }
+
+    const data = await response.json();
+    console.log("Google Login API Response:", data);
+
+    if (!data.succeeded) {
+      throw new Error(data.message || "Google login failed");
+    }
+
+    // Transform the response to match our application's expectations
+    const authResponse: AuthResponse = data;
+    // Add backward compatibility fields
+    authResponse.token = data.data.accessToken;
+    authResponse.status = data.succeeded ? "success" : "error";
+
+    // Save auth data to localStorage
+    localStorage.setItem("auth", JSON.stringify(authResponse));
+    localStorage.setItem("token", data.data.accessToken);
+    console.log("Google login successful:", authResponse);
+
+    return authResponse;
+  } catch (error) {
+    console.error("Google login error:", error);
     throw error;
   }
 };

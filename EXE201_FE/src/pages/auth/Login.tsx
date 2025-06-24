@@ -33,23 +33,39 @@ const Login: React.FC = () => {
     console.log("VITE_ROLE_ADMIN:", import.meta.env.VITE_ROLE_ADMIN);
     console.log("VITE_ROLE_STAFF:", import.meta.env.VITE_ROLE_STAFF);
     console.log("VITE_ROLE_CUSTOMER:", import.meta.env.VITE_ROLE_CUSTOMER);
-  }, [location.state]);
-  // Handle navigation after successful authentication
+  }, [location.state]); // Handle navigation after successful authentication
   useEffect(() => {
     if (isAuthenticated && currentUser) {
       console.log(
         "Authentication detected, checking role:",
-        currentUser.user.role
+        currentUser.data?.user?.roles[0]
       );
       let targetPath;
-      switch (currentUser.user.role) {
-        case import.meta.env.VITE_ROLE_ADMIN:
+
+      // Get the first role from the roles array - normalize to lowercase for case-insensitive comparison
+      const userRole = (currentUser.data?.user?.roles[0] || "").toLowerCase();
+      console.log("User role (normalized):", userRole);
+
+      // Get environment variables and normalize to lowercase
+      const adminRole = import.meta.env.VITE_ROLE_ADMIN.toLowerCase();
+      const staffRole = import.meta.env.VITE_ROLE_STAFF.toLowerCase();
+      const customerRole = import.meta.env.VITE_ROLE_CUSTOMER.toLowerCase();
+
+      console.log("Comparing user role against:", {
+        adminRole,
+        staffRole,
+        customerRole,
+      });
+
+      switch (userRole) {
+        case adminRole:
           targetPath = "/admin";
           break;
-        case import.meta.env.VITE_ROLE_STAFF:
+        case staffRole:
           targetPath = "/staff";
           break;
-        case import.meta.env.VITE_ROLE_CUSTOMER:
+        case customerRole:
+        case "user": // Support both "user" and the env variable value
           targetPath = "/customer";
           break;
         default:
@@ -72,7 +88,7 @@ const Login: React.FC = () => {
     try {
       const userData = await loginUser(formData);
       console.log("Login response userData:", userData); // Log user role for debugging
-      console.log("User role:", userData.user.role);
+      console.log("User role:", userData.data?.user?.roles[0]);
       console.log("Login response:", userData);
 
       // Wait for login to complete

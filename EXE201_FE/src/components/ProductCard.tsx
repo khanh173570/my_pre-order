@@ -26,8 +26,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const isOutOfStock = () => {
     return product.quantity === 0 || product.status === "out_of_stock";
   };
-
   const handleViewProduct = () => {
+    console.log(`View product clicked for ID: ${product.id}`);
     if (onViewProduct) {
       onViewProduct(product.id);
     } else {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-  categoryService,
+  adminCategoryService,
   Category,
   CreateCategoryRequest,
   UpdateCategoryRequest,
@@ -16,14 +16,13 @@ const CategoryList: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [formData, setFormData] = useState<CreateCategoryRequest>({
-    name: "",
+    categoryName: "",
     description: "",
   });
-
-  const fetchCategories = async (page: number = 1) => {
+  const fetchCategories = async () => {
     try {
       setIsLoading(true);
-      const response = await categoryService.getAllCategories(page, 10);
+      const response = await adminCategoryService.getAllCategories();
       setCategories(response.data);
       if (response.pagination) {
         setTotalPages(response.pagination.totalPages);
@@ -37,7 +36,7 @@ const CategoryList: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchCategories(currentPage);
+    fetchCategories();
   }, [currentPage]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,17 +44,23 @@ const CategoryList: React.FC = () => {
 
     try {
       if (editingCategory) {
-        const updateData: UpdateCategoryRequest = { ...formData };
-        await categoryService.updateCategory(editingCategory._id, updateData);
+        const updateData: UpdateCategoryRequest = {
+          ...formData,
+          id: editingCategory.id,
+        };
+        await adminCategoryService.updateCategory(
+          editingCategory.id.toString(),
+          updateData
+        );
         toast.success("Cập nhật danh mục thành công");
       } else {
-        await categoryService.createCategory(formData);
+        await adminCategoryService.createCategory(formData);
         toast.success("Thêm danh mục thành công");
       }
 
       setShowModal(false);
       resetForm();
-      fetchCategories(currentPage);
+      fetchCategories();
     } catch (error) {
       toast.error(
         editingCategory
@@ -69,21 +74,10 @@ const CategoryList: React.FC = () => {
   const handleEdit = (category: Category) => {
     setEditingCategory(category);
     setFormData({
-      name: category.name,
+      categoryName: category.categoryName,
       description: category.description,
     });
     setShowModal(true);
-  };
-
-  const handleToggleStatus = async (categoryId: string) => {
-    try {
-      await categoryService.toggleCategoryStatus(categoryId);
-      toast.success("Cập nhật trạng thái danh mục thành công");
-      fetchCategories(currentPage);
-    } catch (error) {
-      toast.error("Không thể cập nhật trạng thái danh mục");
-      console.error("Error toggling category status:", error);
-    }
   };
   const handleDelete = async (categoryId: string) => {
     // Use SweetAlert2 instead of window.confirm
@@ -99,11 +93,10 @@ const CategoryList: React.FC = () => {
     });
 
     if (!result.isConfirmed) return;
-
     try {
-      await categoryService.deleteCategory(categoryId);
+      await adminCategoryService.deleteCategory(categoryId);
       toast.success("Xóa danh mục thành công");
-      fetchCategories(currentPage);
+      fetchCategories();
     } catch (error) {
       toast.error("Không thể xóa danh mục");
       console.error("Error deleting category:", error);
@@ -113,7 +106,7 @@ const CategoryList: React.FC = () => {
   const resetForm = () => {
     setEditingCategory(null);
     setFormData({
-      name: "",
+      categoryName: "",
       description: "",
     });
   };
@@ -184,13 +177,13 @@ const CategoryList: React.FC = () => {
                   Thao tác
                 </th>
               </tr>
-            </thead>
+            </thead>{" "}
             <tbody className="bg-white divide-y divide-gray-200">
               {categories.map((category) => (
-                <tr key={category._id} className="hover:bg-gray-50">
+                <tr key={category.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
-                      {category.name}
+                      {category.categoryName}
                     </div>
                   </td>
                   <td className="px-6 py-4">
@@ -199,21 +192,16 @@ const CategoryList: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        category.isActive
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {category.isActive ? "Hoạt động" : "Không hoạt động"}
+                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                      Hoạt động
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(category.createdAt).toLocaleDateString("vi-VN")}
-                  </td>{" "}
+                    {new Date().toLocaleDateString("vi-VN")}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex flex-wrap justify-start gap-2">
+                      {" "}
                       <button
                         onClick={() => handleEdit(category)}
                         className="min-w-[80px] px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
@@ -221,17 +209,7 @@ const CategoryList: React.FC = () => {
                         Sửa
                       </button>
                       <button
-                        onClick={() => handleToggleStatus(category._id)}
-                        className={`min-w-[110px] px-3 py-1 rounded ${
-                          category.isActive
-                            ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
-                            : "bg-green-100 text-green-700 hover:bg-green-200"
-                        }`}
-                      >
-                        {category.isActive ? "Vô hiệu hóa" : "Kích hoạt"}
-                      </button>
-                      <button
-                        onClick={() => handleDelete(category._id)}
+                        onClick={() => handleDelete(category.id.toString())}
                         className="min-w-[80px] px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200"
                       >
                         Xóa
@@ -315,6 +293,7 @@ const CategoryList: React.FC = () => {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
+                {" "}
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
                     Tên danh mục
@@ -322,14 +301,14 @@ const CategoryList: React.FC = () => {
                   <input
                     type="text"
                     required
-                    value={formData.name}
+                    value={formData.categoryName}
                     onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
+                      setFormData({ ...formData, categoryName: e.target.value })
                     }
                     className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Nhập tên danh mục"
                   />
-                </div>{" "}
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
                     Mô tả
@@ -351,16 +330,8 @@ const CategoryList: React.FC = () => {
                       Trạng thái
                     </label>
                     <div className="mt-1 block text-sm">
-                      <span
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          editingCategory.isActive
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {editingCategory.isActive
-                          ? "Hoạt động"
-                          : "Không hoạt động"}
+                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                        Hoạt động
                       </span>
                       <p className="text-xs text-gray-500 mt-1">
                         (Bạn có thể thay đổi trạng thái bằng nút "Kích hoạt"/"Vô

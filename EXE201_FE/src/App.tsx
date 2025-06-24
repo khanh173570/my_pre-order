@@ -17,10 +17,9 @@ import MainLayout from "./layouts/MainLayout";
 import AdminLayout from "./layouts/AdminLayout";
 import { Login, Register, OTPVerification } from "./pages/auth";
 import HomeStaff from "./pages/home/HomeStaff";
+import { PreOrder, PreOrderDetail } from "./pages/customer/product";
+import ProductDetail from "./pages/customer/product/ProductDetail";
 import {
-  Products,
-  PreOrder,
-  PreOrderDetail,
   Policy,
   Profile,
   History,
@@ -29,13 +28,15 @@ import {
   PaymentReturn,
   Result,
 } from "./pages/customer";
-import ProductDetail from "./pages/customer/product/ProductDetail";
 import HomeCustomer from "./pages/home/HomeCustomer";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import OrderList from "./pages/admin/orders/OrderList";
 import ProductList from "./pages/admin/products/ProductList";
 import CategoryList from "./pages/admin/categories/CategoryList";
+import { BrandList } from "./pages/admin/brands";
 import AccountList from "./pages/admin/accounts/AccountList";
+import BookingProducts from "./pages/customer/BookingProducts";
+import PreOrderProducts from "./pages/customer/PreOrderProducts";
 
 const App: React.FC = () => {
   return (
@@ -79,13 +80,14 @@ const App: React.FC = () => {
                       path="/customer"
                       element={
                         <ProtectedRoute
-                          allowedRoles={[import.meta.env.VITE_ROLE_CUSTOMER]}
+                          allowedRoles={[]}
+                          //  allowedRoles={[import.meta.env.VITE_ROLE_CUSTOMER]}
                         >
                           <HomeCustomer />
                         </ProtectedRoute>
                       }
                     />{" "}
-                    <Route path="/products" element={<Products />} />
+                    {/* <Route path="/products" element={<Products />} /> */}
                     <Route path="/product/:id" element={<ProductDetail />} />
                     <Route path="/pre-order" element={<PreOrder />} />
                     <Route path="/pre-order/:id" element={<PreOrderDetail />} />
@@ -124,6 +126,14 @@ const App: React.FC = () => {
                           <PaymentReturn />
                         </ProtectedRoute>
                       }
+                    />
+                    <Route
+                      path="/booking-products"
+                      element={<BookingProducts />}
+                    />
+                    <Route
+                      path="/pre-order-products"
+                      element={<PreOrderProducts />}
                     />
                   </Route>
 
@@ -185,7 +195,7 @@ const App: React.FC = () => {
                           <ProductList />
                         </ProtectedRoute>
                       }
-                    />
+                    />{" "}
                     <Route
                       path="/admin/categories"
                       element={
@@ -196,6 +206,19 @@ const App: React.FC = () => {
                           ]}
                         >
                           <CategoryList />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/admin/brands"
+                      element={
+                        <ProtectedRoute
+                          allowedRoles={[
+                            import.meta.env.VITE_ROLE_ADMIN,
+                            import.meta.env.VITE_ROLE_STAFF,
+                          ]}
+                        >
+                          <BrandList />
                         </ProtectedRoute>
                       }
                     />

@@ -3,113 +3,90 @@ import { useNavigate } from "react-router-dom";
 import { useCart } from "../../hooks/useCart";
 import { toast } from "react-toastify";
 import { PageTransition } from "../../components/PageTransition";
-import { PaymentService } from "../../services/payment.service";
+import { checkoutService } from "../../services/checkout.service";
+import { useAuth } from "../../hooks/useAuth";
 
-// Define interfaces for the component
-interface ShippingInfo {
-  fullName: string;
-  address: string;
-  phone: string;
-  email: string;
-  note: string;
-}
+type PaymentMethod = "COD" | "VNBANK" | "INTCARD";
 
 const CheckoutReview: React.FC = () => {
   const navigate = useNavigate();
-  const { cartItems, totalPrice } = useCart();
+  const { cartItems, totalPrice, clearCart } = useCart();
+  const { isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [hadPaymentError, setHadPaymentError] = useState(false);
-  const [shippingInfo, setShippingInfo] = useState<ShippingInfo>({
-    fullName: "",
-    address: "",
-    phone: "",
-    email: "",
-    note: "",
-  });
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("COD");
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setShippingInfo((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  // Calculate shipping fee: 10% of total price, max 30000
+  const calculateShippingFee = (totalPrice: number): number => {
+    const shippingFee = Math.round(totalPrice * 0.1);
+    return Math.min(shippingFee, 30000);
   };
-
+  const shippingFee = calculateShippingFee(totalPrice);
+  const amount = totalPrice + shippingFee;
   const handlePayment = async () => {
-    // Validate input fields
-    if (
-      !shippingInfo.fullName ||
-      !shippingInfo.address ||
-      !shippingInfo.phone ||
-      !shippingInfo.email
-    ) {
-      toast.error("Vui lòng điền đầy đủ thông tin giao hàng");
-      return;
-    }
-
-    // Phone number validation
-    const phoneRegex = /^(0[0-9]{9})$/;
-    if (!phoneRegex.test(shippingInfo.phone)) {
-      toast.error(
-        "Số điện thoại không hợp lệ (phải có 10 số và bắt đầu bằng số 0)"
-      );
-      return;
-    }
-
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(shippingInfo.email)) {
-      toast.error("Email không hợp lệ");
+    // Check if user is authenticated
+    if (!isAuthenticated) {
+      toast.error("Vui lòng đăng nhập để tiếp tục thanh toán");
+      navigate("/login");
       return;
     }
 
     try {
       setIsLoading(true);
+      toast.info("Đang xử lý đơn hàng...");
 
-      // Transform cart items to match the expected format for the service
-      const transformedItems = cartItems.map((item) => ({
-        product: {
-          id: item.id,
-          name: item.name,
+      // Prepare checkout data with calculated shipping fee
+      const checkoutData = {
+        items: cartItems.map((item) => ({
+          id: item.id.toString(),
+          name: item.name || "",
           price: item.price,
-          image: item.image,
-        },
-        quantity: item.quantity,
-      })); // Process payment with shipping info
-      toast.info("Đang xử lý thanh toán...");
-      console.log("Payment request data:", {
-        items: transformedItems,
-        amount: totalPrice,
-        shippingInfo,
-      });
+          quantity: item.quantity,
+          image: item.image || "",
+        })),
+        shippingFee: shippingFee,
+        paymentMethod: paymentMethod as "COD" | "VNBANK" | "INTCARD",
+        totalAmount: amount, // Include shipping fee in total
+      };
 
-      const response = await PaymentService.createPaymentUrl({
-        items: transformedItems,
-        amount: totalPrice,
-        shippingInfo,
-      });
+      if (paymentMethod === "COD") {
+        // Handle COD payment
+        const result = await checkoutService.processCODOrder(checkoutData);
 
-      // Log the response including SecureHash if available
-      console.log("Payment response:", response);
-      if (response.paymentUrl) {
-        // Extract parameters from paymentUrl to see the secureHash
-        const urlParams = new URL(response.paymentUrl).searchParams;
-        const secureHash = urlParams.get("vnp_SecureHash");
-        console.log("VNPay SecureHash:", secureHash);
-      }
-
-      if (response && response.paymentUrl) {
-        window.location.href = response.paymentUrl;
+        if (result.success) {
+          toast.success("Tạo đơn hàng COD thành công!");
+          clearCart();
+          navigate("/payment-return", {
+            state: {
+              orderId: result.orderId,
+              paymentMethod: "COD",
+              message: result.message,
+              status: "success",
+            },
+          });
+        } else {
+          toast.error("Không thể tạo đơn hàng COD");
+        }
       } else {
-        toast.error("Không thể tạo đường dẫn thanh toán");
+        // Handle VNPAY payment (VNBANK or INTCARD)
+        const paymentResult = await checkoutService.processVNPAYOrder(
+          checkoutData
+        );
+
+        if (paymentResult.success && paymentResult.paymentUrl) {
+          toast.success("Tạo đơn hàng thành công! Chuyển hướng thanh toán...");
+          clearCart();
+          // Redirect to VNPay
+          window.location.href = paymentResult.paymentUrl;
+        } else {
+          toast.error("Không thể tạo liên kết thanh toán");
+        }
       }
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : "Lỗi khi xử lý thanh toán";
+        error instanceof Error ? error.message : "Lỗi khi xử lý đơn hàng";
       toast.error(errorMessage);
-      console.error("Payment error:", error);
+      console.error("Checkout error:", error);
       setHadPaymentError(true);
     } finally {
       setIsLoading(false);
@@ -130,82 +107,77 @@ const CheckoutReview: React.FC = () => {
   return (
     <PageTransition>
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-6">Xác nhận đơn hàng</h1>
-
+        <h1 className="text-2xl font-bold mb-6 mt-10 text-center">
+          Xác nhận đơn hàng
+        </h1>{" "}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
+            {/* Payment Method Selection */}
             <div className="bg-white p-6 rounded-lg shadow-md mb-6">
               <h2 className="text-xl font-semibold mb-4">
-                Thông tin giao hàng
+                Phương thức thanh toán
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Họ và tên *
-                  </label>
+              <div className="space-y-3">
+                <label className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
                   <input
-                    type="text"
-                    name="fullName"
-                    value={shippingInfo.fullName}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
+                    type="radio"
+                    name="paymentMethod"
+                    value="COD"
+                    checked={paymentMethod === "COD"}
+                    onChange={(e) =>
+                      setPaymentMethod(e.target.value as PaymentMethod)
+                    }
+                    className="mr-3"
                   />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Số điện thoại *
-                  </label>
+                  <div>
+                    <div className="font-medium">
+                      Thanh toán khi nhận hàng (COD)
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      Thanh toán bằng tiền mặt khi nhận hàng
+                    </div>
+                  </div>
+                </label>
+
+                <label className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
                   <input
-                    type="tel"
-                    name="phone"
-                    value={shippingInfo.phone}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
+                    type="radio"
+                    name="paymentMethod"
+                    value="VNBANK"
+                    checked={paymentMethod === "VNBANK"}
+                    onChange={(e) =>
+                      setPaymentMethod(e.target.value as PaymentMethod)
+                    }
+                    className="mr-3"
                   />
-                </div>
-              </div>
-
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email *
+                  <div>
+                    <div className="font-medium">Thẻ ATM nội địa (VNBANK)</div>
+                    <div className="text-sm text-gray-500">
+                      Thanh toán qua thẻ ATM các ngân hàng Việt Nam
+                    </div>
+                  </div>
                 </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={shippingInfo.email}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
 
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Địa chỉ giao hàng *
+                <label className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="INTCARD"
+                    checked={paymentMethod === "INTCARD"}
+                    onChange={(e) =>
+                      setPaymentMethod(e.target.value as PaymentMethod)
+                    }
+                    className="mr-3"
+                  />
+                  <div>
+                    <div className="font-medium">
+                      Thẻ thanh toán quốc tế (INTCARD)
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      Visa, Mastercard, JCB
+                    </div>
+                  </div>
                 </label>
-                <input
-                  type="text"
-                  name="address"
-                  value={shippingInfo.address}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
-
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Ghi chú
-                </label>
-                <textarea
-                  name="note"
-                  value={shippingInfo.note}
-                  onChange={handleInputChange}
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                ></textarea>
               </div>
             </div>
           </div>
@@ -237,7 +209,7 @@ const CheckoutReview: React.FC = () => {
                     </div>
                   </div>
                 ))}
-              </div>
+              </div>{" "}
               <div className="border-t pt-4">
                 <div className="flex justify-between py-2">
                   <span>Tổng tiền hàng:</span>
@@ -246,12 +218,14 @@ const CheckoutReview: React.FC = () => {
                   </span>
                 </div>
                 <div className="flex justify-between py-2">
-                  <span>Phí vận chuyển:</span>
-                  <span className="font-semibold">0đ</span>
-                </div>
+                  <span>Phí vận chuyển (10%, tối đa 30.000đ):</span>
+                  <span className="font-semibold">
+                    {shippingFee.toLocaleString("vi-VN")}đ
+                  </span>
+                </div>{" "}
                 <div className="flex justify-between py-2 text-lg font-bold">
                   <span>Tổng thanh toán:</span>
-                  <span>{totalPrice.toLocaleString("vi-VN")}đ</span>
+                  <span>{amount.toLocaleString("vi-VN")}đ</span>
                 </div>
               </div>
               <div className="mt-6 space-y-3">

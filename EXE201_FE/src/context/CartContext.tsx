@@ -20,6 +20,9 @@ export const CartContext = createContext<CartContextProps | undefined>(
   undefined
 );
 
+// Base key for guest cart
+const GUEST_CART_KEY = "cart_guest";
+
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -27,12 +30,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isClearing, setIsClearing] = useState(false);
   const { currentUser } = useAuth();
 
-  // Get cart storage key based on user ID
+  // Generate cart key based on user ID or guest key
   const getCartKey = useCallback(() => {
-    return currentUser?.id ? `cart_${currentUser.id}` : "cart_guest";
-  }, [currentUser]);
-
-  // Load cart from localStorage on mount and when user changes
+    // If user is logged in, use their ID to create a unique cart key
+    if (currentUser?.data?.user?.id) {
+      return `cart_id_${currentUser.data.user.id}`;
+    }
+    // Otherwise use guest cart
+    return GUEST_CART_KEY;
+  }, [currentUser]); // Load cart from localStorage whenever user changes or component mounts
   useEffect(() => {
     try {
       const cartKey = getCartKey();
@@ -44,15 +50,31 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         const parsedCart = JSON.parse(savedCart);
         if (Array.isArray(parsedCart)) {
           setCartItems(parsedCart);
-          console.log("Cart loaded successfully:", parsedCart);
+          console.log("Cart loaded successfully:", parsedCart.length, "items");
+        } else {
+          console.warn(
+            "Invalid cart format in localStorage. Initializing empty cart."
+          );
+          setCartItems([]);
+          // Fix the storage by setting an empty array
+          localStorage.setItem(cartKey, JSON.stringify([]));
         }
+      } else {
+        console.log(
+          "No cart data found in localStorage. Initializing empty cart."
+        );
+        // Initialize empty cart in localStorage
+        localStorage.setItem(cartKey, JSON.stringify([]));
       }
     } catch (error) {
       console.error("Error loading cart:", error);
+      // Initialize empty cart on error
+      setCartItems([]);
+      localStorage.setItem(getCartKey(), JSON.stringify([]));
     }
-  }, [getCartKey]); // Save cart to localStorage whenever it changes
+  }, [getCartKey]); // Reload when user changes (which affects the cart key)  // Save cart to localStorage whenever it changes or user changes
   useEffect(() => {
-    // Don't save if we're in the middle of clearing
+    // Don't save if we're in the middle of clearing (handled by the clearCart function)
     if (isClearing) {
       setIsClearing(false);
       return;
@@ -61,113 +83,214 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const cartKey = getCartKey();
       console.log("Saving cart for key:", cartKey);
-      console.log("Cart data to save:", cartItems);
+      console.log("Cart data to save:", cartItems.length, "items");
 
-      // Only save if we have items or if it's an explicit clear (empty array)
+      // Validate cartItems before saving
+      if (!Array.isArray(cartItems)) {
+        console.warn("Invalid cart state detected");
+        localStorage.setItem(cartKey, JSON.stringify([]));
+        return;
+      }
+
+      // Always save the cart state to localStorage, even if empty
       localStorage.setItem(cartKey, JSON.stringify(cartItems));
       console.log("Cart saved successfully");
+
+      // Verify the save was successful
+      const savedCart = localStorage.getItem(cartKey);
+      if (!savedCart) {
+        console.warn("Failed to save cart to localStorage");
+      }
     } catch (error) {
       console.error("Error saving cart:", error);
     }
-  }, [cartItems, getCartKey, isClearing]);
+  }, [cartItems, isClearing, getCartKey]); // Include getCartKey dependency to update when user changes
   const addToCart = (product: Product, quantity: number = 1) => {
     if (!product || !product.id) {
       console.error("Invalid product:", product);
       return;
     }
 
+    const productId = product.id.toString();
+    console.log(
+      `Adding/updating product ID: ${productId} with quantity: ${quantity}`
+    );
+
     setCartItems((prevItems) => {
-      const existingItem = prevItems.find((item) => item.id === product.id);
+      // Ensure prevItems is an array
+      const safeItems = Array.isArray(prevItems) ? prevItems : [];
+
+      const existingItem = safeItems.find(
+        (item) => (item.id?.toString() || "") === productId
+      );
+
       if (existingItem) {
         console.log(
           "Updating quantity for existing item:",
-          product.id,
-          "by",
-          quantity
+          productId,
+          "from",
+          existingItem.quantity,
+          "to",
+          existingItem.quantity + quantity
         );
-        return prevItems.map((item) =>
-          item.id === product.id
+
+        const updated = safeItems.map((item) =>
+          (item.id?.toString() || "") === productId
             ? { ...item, quantity: item.quantity + quantity }
             : item
         );
+
+        // Double-check the updated cart has the item
+        const didUpdate = updated.some(
+          (item) => (item.id?.toString() || "") === productId
+        );
+        if (!didUpdate) {
+          console.warn("Failed to update item in cart!");
+        }
+
+        return updated;
       }
+
       console.log(
         "Adding new item to cart:",
-        product,
+        productId,
         "with quantity:",
         quantity
       );
-      return [...prevItems, { ...product, quantity: quantity }];
+      const newCartItem: CartItem = {
+        ...product,
+        quantity: quantity,
+      };
+
+      return [...safeItems, newCartItem];
+    }); // Force a save to localStorage after state update
+    setTimeout(() => {
+      const cartKey = getCartKey();
+      console.log("Forcing localStorage update after cart change");
+      const currentCart = localStorage.getItem(cartKey);
+      const parsedCart = currentCart ? JSON.parse(currentCart) : [];
+      console.log("Current localStorage cart:", parsedCart.length, "items");
+    }, 100);
+  };
+  const removeFromCart = (productId: string) => {
+    console.log("Removing item from cart:", productId);
+
+    // Get current cart before change
+    const cartKey = getCartKey();
+    const cartBefore = localStorage.getItem(cartKey);
+    console.log("Current cart in localStorage before removal:", cartBefore);
+
+    setCartItems((prevItems) => {
+      // Ensure prevItems is an array
+      const safeItems = Array.isArray(prevItems) ? prevItems : [];
+
+      // Log what we're removing
+      const itemToRemove = safeItems.find(
+        (item) => (item.id?.toString() || "") === productId
+      );
+      if (itemToRemove) {
+        console.log(
+          `Removing item: ${
+            itemToRemove.productName || itemToRemove.name || productId
+          }`
+        );
+      } else {
+        console.warn(`Item with ID ${productId} not found in cart`);
+      }
+
+      return safeItems.filter(
+        (item) => (item.id?.toString() || "") !== productId
+      );
     });
   };
 
-  const removeFromCart = (productId: string) => {
-    console.log("Removing item from cart:", productId);
-    setCartItems((prevItems) =>
-      prevItems.filter((item) => item.id !== productId)
-    );
-  };
-
   const updateQuantity = (productId: string, quantity: number) => {
-    console.log("Updating quantity for item:", productId, quantity);
+    console.log("Updating quantity for item:", productId, "to", quantity);
+
     if (quantity < 1) {
+      console.log("Quantity is less than 1, removing item from cart");
       removeFromCart(productId);
       return;
     }
-    setCartItems((prevItems) =>
-      prevItems.map((item) =>
-        item.id === productId ? { ...item, quantity } : item
-      )
-    );
+
+    setCartItems((prevItems) => {
+      // Ensure prevItems is an array
+      const safeItems = Array.isArray(prevItems) ? prevItems : [];
+
+      const itemExists = safeItems.some(
+        (item) => (item.id?.toString() || "") === productId
+      );
+      if (!itemExists) {
+        console.warn(
+          `Cannot update quantity: Item with ID ${productId} not found in cart`
+        );
+        return safeItems;
+      }
+
+      return safeItems.map((item) =>
+        (item.id?.toString() || "") === productId ? { ...item, quantity } : item
+      );
+    });
   };
   const clearCart = useCallback(() => {
     console.log("=== CLEARING CART START ===");
     console.log("Current cart items before clear:", cartItems);
 
-    // Set clearing flag to prevent save effect
+    // Set clearing flag to prevent save effect from firing multiple times
     setIsClearing(true);
 
-    // Clear localStorage aggressively
     try {
       const cartKey = getCartKey();
       console.log("Attempting to clear localStorage with key:", cartKey);
 
-      // Check if key exists before removal
-      const existingData = localStorage.getItem(cartKey);
-      console.log("Existing data in localStorage:", existingData);
+      // First verify if cart exists
+      const existingCart = localStorage.getItem(cartKey);
+      console.log("Existing cart in localStorage:", existingCart);
 
-      localStorage.removeItem(cartKey);
+      // Instead of removing the key, store an empty array
+      localStorage.setItem(cartKey, JSON.stringify([]));
 
-      // Also try to remove guest cart and any other cart keys
-      localStorage.removeItem("cart_guest");
+      // Verify empty array was saved
+      const afterClear = localStorage.getItem(cartKey);
+      console.log("Cart after clear:", afterClear);
 
-      // Remove any keys that start with "cart_"
-      Object.keys(localStorage).forEach((key) => {
-        if (key.startsWith("cart_")) {
-          console.log("Removing additional cart key:", key);
-          localStorage.removeItem(key);
-        }
-      });
+      if (afterClear !== JSON.stringify([])) {
+        console.warn("Cart may not have been properly cleared in localStorage");
+        // Try again with direct assignment
+        localStorage.setItem(cartKey, "[]");
+      }
 
-      // Verify removal
-      const afterRemoval = localStorage.getItem(cartKey);
-      console.log("Data after removal:", afterRemoval);
-
-      console.log("Cart cleared from localStorage for key:", cartKey);
+      console.log("Cart cleared in localStorage");
     } catch (error) {
       console.error("Error clearing cart from localStorage:", error);
     }
 
-    // Then clear state
+    // Clear state
     setCartItems([]);
     console.log("Cart state cleared");
 
     console.log("=== CLEARING CART END ===");
-  }, [getCartKey, cartItems]);
 
-  const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+    // Double check after a short delay
+    setTimeout(() => {
+      const cartKey = getCartKey();
+      const finalCheck = localStorage.getItem(cartKey);
+      console.log("Final cart state check:", finalCheck);
+      if (finalCheck !== "[]" && finalCheck !== JSON.stringify([])) {
+        console.warn(
+          "Final cart clear verification failed, forcing empty array"
+        );
+        localStorage.setItem(cartKey, "[]");
+      }
+    }, 200);
+  }, [cartItems, getCartKey]);
+
+  const totalItems = cartItems.reduce(
+    (sum: number, item: CartItem) => sum + item.quantity,
+    0
+  );
   const totalPrice = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
+    (sum: number, item: CartItem) => sum + item.price * item.quantity,
     0
   );
 

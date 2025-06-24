@@ -251,7 +251,9 @@ export const orderService = {
       console.error("Error creating pre-order:", error);
       throw error;
     }
-  }, // Create VNPAY payment URL
+  },
+
+  // Create VNPAY payment URL
   createPaymentUrl: async (
     amount: number,
     orderDescription: string,
@@ -262,7 +264,7 @@ export const orderService = {
       // Ensure orderDescription is not empty
       const description = orderDescription || `Thanh toan don hang #${orderId}`;
 
-      // Use GET method with query parameters (as required by backend)
+      // Use POST method with query parameters and empty body (as required by backend)
       const params = new URLSearchParams({
         amount: amount.toString(),
         orderDescription: description,
@@ -270,7 +272,7 @@ export const orderService = {
         bankCode: bankCode,
       });
 
-      console.log("Creating payment URL with GET params:", {
+      console.log("Creating payment URL with POST params:", {
         amount: amount,
         orderDescription: description,
         orderId: orderId,
@@ -278,9 +280,11 @@ export const orderService = {
       });
 
       const response = await apiCall(`/Vnpay/create-payment-url?${params}`, {
-        method: "GET",
+        method: "POST",
         headers: getAuthHeaders(),
+        body: "", // Empty body as required by backend
       });
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error("Payment URL API error response:", errorText);
@@ -290,7 +294,6 @@ export const orderService = {
           `Failed to create payment URL: ${response.status} - ${errorText}`
         );
       }
-
       const data = await response.json();
       console.log("Payment URL created successfully:", data);
       return data;
@@ -299,6 +302,7 @@ export const orderService = {
       throw error;
     }
   },
+
   // Verify payment callback from VNPay
   verifyPayment: async (
     queryParams: Record<string, string>
@@ -315,7 +319,6 @@ export const orderService = {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to verify payment");
       }
-
       const data = await response.json();
       return data;
     } catch (error) {

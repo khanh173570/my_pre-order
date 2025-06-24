@@ -130,6 +130,7 @@ const BookingProducts: React.FC = () => {
         product.stockQuantity === 0
           ? ("out_of_stock" as const)
           : ("active" as const),
+      isPreOrder: product.isPreOrder || false, // Add isPreOrder flag
     };
   };
 

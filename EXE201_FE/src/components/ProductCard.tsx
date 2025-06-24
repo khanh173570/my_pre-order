@@ -25,6 +25,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   // Helper function to check if a product is out of stock
   const isOutOfStock = () => {
+    // Pre-order products are never considered out of stock
+    if (product.isPreOrder) return false;
     return product.quantity === 0 || product.status === "out_of_stock";
   };
 
@@ -61,7 +63,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         )}
         {product.isPreOrder && (
           <div className="absolute top-2 left-2">
-            <span className="bg-purple-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+            <span className="bg-purple-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-md">
               PRE-ORDER
             </span>
           </div>
@@ -84,7 +86,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
         </div>
         <div className="flex justify-between items-center mb-2">
           <span className="text-sm text-gray-600">
-            {!isOutOfStock() ? (
+            {product.isPreOrder ? (
+              <span className="font-semibold text-sm">Nhận đặt trước</span>
+            ) : !isOutOfStock() ? (
               <>
                 Còn lại:{" "}
                 <span className="font-semibold text-sm">
@@ -95,7 +99,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
               <span className="text-red-600 font-semibold">Hết hàng</span>
             )}
           </span>
-          {!isOutOfStock() && product.quantity <= 10 && (
+          {!product.isPreOrder && !isOutOfStock() && product.quantity <= 10 && (
             <span className="text-sm text-red-500 font-medium animate-pulse">
               Sắp hết hàng!
             </span>

@@ -26,7 +26,7 @@ import {
   History,
   Cart,
   CheckoutReview,
-  PaymentReturn,
+  // PaymentReturn,
   Result,
 } from "./pages/customer";
 import ProductDetail from "./pages/customer/product/ProductDetail";
@@ -115,7 +115,7 @@ const App: React.FC = () => {
                         </ProtectedRoute>
                       }
                     />
-                    <Route
+                    {/* <Route
                       path="/payment-return"
                       element={
                         <ProtectedRoute
@@ -124,7 +124,7 @@ const App: React.FC = () => {
                           <PaymentReturn />
                         </ProtectedRoute>
                       }
-                    />
+                    /> */}
                   </Route>
 
                   {/* Admin and Staff routes with AdminLayout */}

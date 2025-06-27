@@ -29,7 +29,7 @@ const Result = () => {
       //   userAuth
     ) {
       console.log("Payment successful, clearing cart...");
-      alert("Payment successful! About to clear cart..."); // Debug alert
+      // alert("Payment successful! About to clear cart..."); // Debug alert
       //   dispatch(topupResult(balance));
       // Clear cart when payment is successful
       clearCart();
@@ -42,7 +42,7 @@ const Result = () => {
           key.startsWith("cart_")
         );
         console.log("Cart keys after clear:", cartKeys);
-        alert(`Cart keys in localStorage after clear: ${cartKeys.join(", ")}`);
+        // alert(`Cart keys in localStorage after clear: ${cartKeys.join(", ")}`);
       }, 1000);
     } else {
       console.log("Conditions not met for clearing cart");
@@ -108,8 +108,8 @@ const Result = () => {
               }`}
             >
               {status === "success"
-                ? "Thanh toán thành công!"
-                : "Thanh toán thất bại!"}
+                ? "Thanh toán thành công !"
+                : "Thanh toán thất bại !"}
             </h1>
 
             {/* Status Details */}

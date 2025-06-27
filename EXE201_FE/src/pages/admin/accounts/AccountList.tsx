@@ -5,9 +5,11 @@ import {
   CreateAccountRequest,
   UpdateAccountRequest,
 } from "../../../services/admin/account.service";
-import { AlertService } from "../../../services/AlertService";
 import { showError, showSuccess } from "../../../utils/notifications";
 import Swal from "sweetalert2";
+import Pagination from "../../../components/Pagination";
+
+const ITEMS_PER_PAGE = 10;
 
 const AccountList: React.FC = () => {
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -19,16 +21,22 @@ const AccountList: React.FC = () => {
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
   const [formData, setFormData] = useState<CreateAccountRequest>({
-    name: "",
+    username: "",
     email: "",
     password: "",
-    role: "user",
+    fullName: "",
+    phoneNumber: "",
+    address: "",
+    role: "Customer",
   });
 
   const fetchAccounts = async (page: number = 1) => {
     try {
       setIsLoading(true);
-      const response = await accountService.getAllAccounts(page, 10);
+      const response = await accountService.getAllAccounts(
+        page,
+        ITEMS_PER_PAGE
+      );
       setAccounts(response.data);
       if (response.pagination) {
         setTotalPages(response.pagination.totalPages);
@@ -51,11 +59,18 @@ const AccountList: React.FC = () => {
     try {
       if (editingAccount) {
         const updateData: UpdateAccountRequest = {
-          name: formData.name,
+          id: editingAccount.id,
+          username: formData.username,
           email: formData.email,
+          fullName: formData.fullName,
+          phoneNumber: formData.phoneNumber,
+          address: formData.address,
           role: formData.role,
         };
-        await accountService.updateAccount(editingAccount._id, updateData);
+        await accountService.updateAccount(
+          editingAccount.id.toString(),
+          updateData
+        );
         showSuccess("Cập nhật tài khoản thành công");
       } else {
         await accountService.createAccount(formData);
@@ -78,38 +93,32 @@ const AccountList: React.FC = () => {
   const handleEdit = (account: Account) => {
     setEditingAccount(account);
     setFormData({
-      name: account.name,
+      username: account.username,
       email: account.email,
       password: "", // Don't show password
+      fullName: account.fullName,
+      phoneNumber: account.phoneNumber || "",
+      address: account.address || "",
       role: account.role,
     });
     setShowModal(true);
   };
-  const handleToggleStatus = async (accountId: string) => {
+
+  const handleToggleStatus = async (accountId: number) => {
     try {
-      const account = accounts.find((acc) => acc._id === accountId);
+      const account = accounts.find((acc) => acc.id === accountId);
       const action = account?.isActive ? "khóa" : "mở khóa";
 
-      await accountService.toggleAccountStatus(accountId);
+      await accountService.toggleAccountStatus(accountId.toString());
       showSuccess(`Đã ${action} tài khoản thành công`);
       fetchAccounts(currentPage);
     } catch (error) {
-      if (error && typeof error === "object" && "response" in error) {
-        const axiosError = error as {
-          response?: { data?: { message?: string } };
-        };
-        showError(
-          axiosError.response?.data?.message ||
-            "Không thể cập nhật trạng thái tài khoản"
-        );
-      } else {
-        showError("Không thể cập nhật trạng thái tài khoản");
-      }
+      showError("Không thể cập nhật trạng thái tài khoản");
       console.error("Error toggling account status:", error);
     }
   };
-  const handleDelete = async (accountId: string) => {
-    // Use SweetAlert2 instead of window.confirm
+
+  const handleDelete = async (accountId: number) => {
     const result = await Swal.fire({
       title: "Xác nhận",
       text: "Bạn có chắc chắn muốn xóa tài khoản này?",
@@ -124,65 +133,52 @@ const AccountList: React.FC = () => {
     if (!result.isConfirmed) return;
 
     try {
-      await accountService.deleteAccount(accountId);
+      await accountService.deleteAccount(accountId.toString());
       showSuccess("Xóa tài khoản thành công");
       fetchAccounts(currentPage);
     } catch (error) {
-      if (error && typeof error === "object" && "response" in error) {
-        const axiosError = error as {
-          response?: { data?: { message?: string } };
-        };
-        showError(
-          axiosError.response?.data?.message || "Không thể xóa tài khoản"
-        );
-      } else {
-        showError("Không thể xóa tài khoản");
-      }
+      showError("Không thể xóa tài khoản");
       console.error("Error deleting account:", error);
     }
   };
+
   const resetForm = () => {
     setEditingAccount(null);
     setFormData({
-      name: "",
+      username: "",
       email: "",
       password: "",
-      role: "user",
+      fullName: "",
+      phoneNumber: "",
+      address: "",
+      role: "Customer",
     });
   };
 
-  const openAddModal = () => {
-    resetForm();
-    setShowModal(true);
-  };
   const getRoleColor = (role: string) => {
     switch (role) {
-      case "admin":
+      case "Admin":
         return "bg-red-100 text-red-800";
-      case "staff":
+      case "Staff":
         return "bg-blue-100 text-blue-800";
-      case "user":
+      case "Customer":
         return "bg-green-100 text-green-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
   };
+
   const getRoleText = (role: string) => {
     switch (role) {
-      case "admin":
+      case "Admin":
         return "Quản trị viên";
-      case "staff":
+      case "Staff":
         return "Nhân viên";
-      case "user":
+      case "Customer":
         return "Khách hàng";
       default:
         return role;
     }
-  };
-
-  const handleViewDetails = (account: Account) => {
-    setSelectedAccount(account);
-    setShowDetailsModal(true);
   };
 
   if (isLoading) {
@@ -206,408 +202,378 @@ const AccountList: React.FC = () => {
           </p>
         </div>
         <button
-          onClick={openAddModal}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium flex items-center space-x-2"
+          onClick={() => setShowModal(true)}
+          className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
         >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-            />
-          </svg>
-          <span>Thêm tài khoản</span>
+          Thêm tài khoản
         </button>
       </div>
 
       {/* Accounts Table */}
       <div className="bg-white shadow-md rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Thông tin
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Vai trò
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Trạng thái
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Xác thực
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ngày tạo
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Thao tác
-                </th>
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Tài khoản
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Vai trò
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Trạng thái
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Ngày tạo
+              </th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Thao tác
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {accounts.map((account) => (
+              <tr key={account.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0 h-10 w-10">
+                      <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                        <span className="text-sm font-medium text-gray-700">
+                          {account.fullName.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="ml-4">
+                      <div className="text-sm font-medium text-gray-900">
+                        {account.fullName}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {account.email}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        @{account.username}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span
+                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(
+                      account.role
+                    )}`}
+                  >
+                    {getRoleText(account.role)}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span
+                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                      account.isActive
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
+                    {account.isActive ? "Hoạt động" : "Đã khóa"}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {new Date(account.createdAt).toLocaleDateString("vi-VN")}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <div className="flex flex-wrap justify-end gap-2">
+                    <button
+                      onClick={() => {
+                        setSelectedAccount(account);
+                        setShowDetailsModal(true);
+                      }}
+                      className="min-w-[80px] px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
+                    >
+                      Xem
+                    </button>
+                    <button
+                      onClick={() => handleEdit(account)}
+                      className="min-w-[80px] px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                    >
+                      Sửa
+                    </button>
+                    <button
+                      onClick={() => handleToggleStatus(account.id)}
+                      className={`min-w-[110px] px-3 py-1 rounded ${
+                        account.isActive
+                          ? "bg-red-100 text-red-700 hover:bg-red-200"
+                          : "bg-green-100 text-green-700 hover:bg-green-200"
+                      }`}
+                    >
+                      {account.isActive ? "Khóa" : "Mở khóa"}
+                    </button>
+                    <button
+                      onClick={() => handleDelete(account.id)}
+                      className="min-w-[80px] px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200"
+                    >
+                      Xóa
+                    </button>
+                  </div>
+                </td>
               </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {accounts.map((account) => (
-                <tr key={account._id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10">
-                        <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                          <span className="text-sm font-medium text-gray-700">
-                            {account.name.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">
-                          {account.name}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {account.email}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(
-                        account.role
-                      )}`}
-                    >
-                      {getRoleText(account.role)}
-                    </span>{" "}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        account.isActive
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                      title={
-                        account.isActive
-                          ? "Tài khoản đang hoạt động bình thường"
-                          : "Tài khoản đã bị khóa và không thể đăng nhập"
-                      }
-                    >
-                      {account.isActive ? "Hoạt động" : "Đã khóa"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        account.isVerified
-                          ? "bg-green-100 text-green-800"
-                          : "bg-yellow-100 text-yellow-800"
-                      }`}
-                    >
-                      {account.isVerified ? "Đã xác thực" : "Chưa xác thực"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(account.createdAt).toLocaleDateString("vi-VN")}
-                  </td>{" "}
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex flex-wrap justify-start gap-2">
-                      <button
-                        onClick={() => handleEdit(account)}
-                        className="min-w-[80px] px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
-                      >
-                        Sửa
-                      </button>
-                      <button
-                        onClick={() => handleToggleStatus(account._id)}
-                        className={`min-w-[110px] px-3 py-1 rounded ${
-                          account.isActive
-                            ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
-                            : "bg-green-100 text-green-700 hover:bg-green-200"
-                        }`}
-                        title={
-                          account.isActive
-                            ? "Khóa tài khoản này"
-                            : "Mở khóa tài khoản này"
-                        }
-                      >
-                        {account.isActive ? "Khóa tài khoản" : "Mở khóa"}
-                      </button>
-                      <button
-                        onClick={() => handleDelete(account._id)}
-                        className="min-w-[80px] px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200"
-                        disabled={!account.isActive}
-                        title={
-                          !account.isActive
-                            ? "Không thể xóa tài khoản đã bị khóa"
-                            : ""
-                        }
-                      >
-                        Xóa
-                      </button>
-                      <button
-                        onClick={() => handleViewDetails(account)}
-                        className="min-w-[110px] px-3 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200"
-                      >
-                        Xem chi tiết
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="px-6 py-3 flex items-center justify-between border-t border-gray-200">
-            <div className="flex-1 flex justify-between sm:hidden">
-              <button
-                onClick={() => setCurrentPage(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-              >
-                Trước
-              </button>
-              <button
-                onClick={() => setCurrentPage(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-              >
-                Sau
-              </button>
-            </div>
-            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm text-gray-700">
-                  Trang <span className="font-medium">{currentPage}</span> của{" "}
-                  <span className="font-medium">{totalPages}</span>
-                </p>
-              </div>
-              <div>
-                <nav
-                  className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-                  aria-label="Pagination"
-                >
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (page) => (
-                      <button
-                        key={page}
-                        onClick={() => setCurrentPage(page)}
-                        className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                          currentPage === page
-                            ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
-                            : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    )
-                  )}
-                </nav>
-              </div>
-            </div>
+        {accounts.length === 0 && (
+          <div className="text-center py-8">
+            <p className="text-gray-500">Không có tài khoản nào</p>
           </div>
         )}
       </div>
 
+      {/* Pagination */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
+
       {/* Add/Edit Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium text-gray-900">
-                  {editingAccount ? "Cập nhật tài khoản" : "Thêm tài khoản mới"}
-                </h3>
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  ✕
-                </button>
-              </div>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-bold mb-4">
+              {editingAccount ? "Sửa tài khoản" : "Thêm tài khoản"}
+            </h2>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit}>
+              <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Họ và tên
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Tên đăng nhập *
                   </label>
                   <input
                     type="text"
-                    required
-                    value={formData.name}
+                    value={formData.username}
                     onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
+                      setFormData({ ...formData, username: e.target.value })
                     }
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Nhập họ và tên"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    required
                   />
                 </div>
-
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Email
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Họ và tên *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.fullName}
+                    onChange={(e) =>
+                      setFormData({ ...formData, fullName: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Email *
                   </label>
                   <input
                     type="email"
-                    required
                     value={formData.email}
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Nhập email"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    required
                   />
                 </div>
-
-                {!editingAccount && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Mật khẩu
-                    </label>
-                    <input
-                      type="password"
-                      required
-                      value={formData.password}
-                      onChange={(e) =>
-                        setFormData({ ...formData, password: e.target.value })
-                      }
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Nhập mật khẩu"
-                      minLength={6}
-                    />
-                  </div>
-                )}
-
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Vai trò
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Số điện thoại
+                  </label>
+                  <input
+                    type="tel"
+                    value={formData.phoneNumber}
+                    onChange={(e) =>
+                      setFormData({ ...formData, phoneNumber: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
+              {!editingAccount && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Mật khẩu *
+                  </label>
+                  <input
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) =>
+                      setFormData({ ...formData, password: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    required={!editingAccount}
+                  />
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Vai trò *
                   </label>
                   <select
-                    required
                     value={formData.role}
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        role: e.target.value as "user" | "staff" | "admin",
+                        role: e.target.value as "Admin" | "Staff" | "Customer",
                       })
                     }
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    required
                   >
-                    <option value="user">Khách hàng</option>
-                    <option value="staff">Nhân viên</option>
-                    <option value="admin">Quản trị viên</option>
+                    <option value="Customer">Khách hàng</option>
+                    <option value="Staff">Nhân viên</option>
+                    <option value="Admin">Quản trị viên</option>
                   </select>
                 </div>
+              </div>
 
-                <div className="flex justify-end space-x-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setShowModal(false)}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-                  >
-                    Hủy
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700"
-                  >
-                    {editingAccount ? "Cập nhật" : "Thêm"}
-                  </button>
-                </div>
-              </form>
-            </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Địa chỉ
+                </label>
+                <textarea
+                  value={formData.address}
+                  onChange={(e) =>
+                    setFormData({ ...formData, address: e.target.value })
+                  }
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div className="flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowModal(false);
+                    resetForm();
+                  }}
+                  className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                >
+                  {editingAccount ? "Cập nhật" : "Thêm"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
 
-      {/* Account Details Modal */}
+      {/* Details Modal */}
       {showDetailsModal && selectedAccount && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium text-gray-900">
-                  Chi tiết tài khoản
-                </h3>
-                <button
-                  onClick={() => setShowDetailsModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  ✕
-                </button>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Chi tiết tài khoản</h2>
+              <button
+                onClick={() => setShowDetailsModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Họ và tên
+                </label>
+                <p className="mt-1 text-sm text-gray-900">
+                  {selectedAccount.fullName}
+                </p>
               </div>
 
-              <div className="space-y-4">
-                <div>
-                  <span className="block text-sm font-medium text-gray-700">
-                    Họ và tên:
-                  </span>
-                  <span className="block text-sm text-gray-900">
-                    {selectedAccount.name}
-                  </span>
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Tên đăng nhập
+                </label>
+                <p className="mt-1 text-sm text-gray-900">
+                  {selectedAccount.username}
+                </p>
+              </div>
 
-                <div>
-                  <span className="block text-sm font-medium text-gray-700">
-                    Email:
-                  </span>
-                  <span className="block text-sm text-gray-900">
-                    {selectedAccount.email}
-                  </span>
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Email
+                </label>
+                <p className="mt-1 text-sm text-gray-900">
+                  {selectedAccount.email}
+                </p>
+              </div>
 
-                <div>
-                  <span className="block text-sm font-medium text-gray-700">
-                    Vai trò:
-                  </span>
-                  <span className="block text-sm text-gray-900">
-                    {getRoleText(selectedAccount.role)}
-                  </span>
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Số điện thoại
+                </label>
+                <p className="mt-1 text-sm text-gray-900">
+                  {selectedAccount.phoneNumber || "Chưa cập nhật"}
+                </p>
+              </div>
 
-                <div>
-                  <span className="block text-sm font-medium text-gray-700">
-                    Trạng thái:
-                  </span>
-                  <span className="block text-sm text-gray-900">
-                    {selectedAccount.isActive ? "Đang hoạt động" : "Đã khóa"}
-                  </span>
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Địa chỉ
+                </label>
+                <p className="mt-1 text-sm text-gray-900">
+                  {selectedAccount.address || "Chưa cập nhật"}
+                </p>
+              </div>
 
-                <div>
-                  <span className="block text-sm font-medium text-gray-700">
-                    Địa chỉ:
-                  </span>
-                  <span className="block text-sm text-gray-900">
-                    {selectedAccount.address || "Chưa cập nhật"}
-                  </span>
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Vai trò
+                </label>
+                <p className="mt-1 text-sm text-gray-900">
+                  {getRoleText(selectedAccount.role)}
+                </p>
+              </div>
 
-                <div>
-                  <span className="block text-sm font-medium text-gray-700">
-                    Số điện thoại:
-                  </span>
-                  <span className="block text-sm text-gray-900">
-                    {selectedAccount.phone || "Chưa cập nhật"}
-                  </span>
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Trạng thái
+                </label>
+                <p className="mt-1 text-sm text-gray-900">
+                  {selectedAccount.isActive ? "Hoạt động" : "Đã khóa"}
+                </p>
+              </div>
 
-                <div>
-                  <span className="block text-sm font-medium text-gray-700">
-                    Ngày tạo:
-                  </span>
-                  <span className="block text-sm text-gray-900">
-                    {new Date(selectedAccount.createdAt).toLocaleDateString(
-                      "vi-VN"
-                    )}
-                  </span>
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Ngày tạo
+                </label>
+                <p className="mt-1 text-sm text-gray-900">
+                  {new Date(selectedAccount.createdAt).toLocaleString("vi-VN")}
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Cập nhật lần cuối
+                </label>
+                <p className="mt-1 text-sm text-gray-900">
+                  {new Date(selectedAccount.updatedAt).toLocaleString("vi-VN")}
+                </p>
               </div>
             </div>
           </div>

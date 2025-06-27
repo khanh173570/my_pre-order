@@ -2,20 +2,15 @@ import React, { useState, useEffect } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { PageTransition } from "../../components/PageTransition";
-import {
-  customerOrderService,
-  CustomerOrder,
-} from "../../services/customer/order.service";
+import { adminOrderService, Order } from "../../services/admin/order.service";
 import { toast } from "react-toastify";
 
 const History: React.FC = () => {
   const { isAuthenticated, currentUser } = useAuth();
-  const [orders, setOrders] = useState<CustomerOrder[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedOrder, setSelectedOrder] = useState<CustomerOrder | null>(
-    null
-  );
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const itemsPerPage = 6;
 
@@ -24,12 +19,11 @@ const History: React.FC = () => {
       fetchOrders();
     }
   }, [isAuthenticated]);
-
   const fetchOrders = async () => {
     try {
       setIsLoading(true);
-      const orderData = await customerOrderService.getMyOrders();
-      setOrders(orderData);
+      const response = await adminOrderService.getUserOrders();
+      setOrders(response.data);
     } catch (error) {
       toast.error("Không thể tải lịch sử đơn hàng");
       console.error("Error fetching orders:", error);
@@ -42,7 +36,7 @@ const History: React.FC = () => {
     if (!window.confirm("Bạn có chắc chắn muốn hủy đơn hàng này?")) return;
 
     try {
-      await customerOrderService.cancelOrder(orderId);
+      await adminOrderService.cancelOrder(orderId);
       toast.success("Hủy đơn hàng thành công");
       fetchOrders(); // Refresh the orders list
     } catch (error) {

@@ -24,22 +24,43 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
 
-  // Role check after authentication
-  const userRole = currentUser.user?.role || currentUser.roleName || "customer";
-  console.log("User role:", userRole);
-  console.log("Role check:", !allowedRoles.includes(userRole));
+  // Determine user role from new API response structure or fallback to old structure
+  let userRole = "customer"; // Default fallback role
 
-  if (!allowedRoles.includes(userRole)) {
+  // Handle new API structure (array of roles)
+  if (currentUser.data?.user?.roles && currentUser.data.user.roles.length > 0) {
+    userRole = currentUser.data.user.roles[0].toLowerCase();
+    console.log("Role from new API structure:", userRole);
+  }
+  // Legacy support for old API structure
+  else if (currentUser.roleName) {
+    userRole = currentUser.roleName.toLowerCase();
+  }
+
+  console.log("User role determined:", userRole);
+
+  // Convert allowedRoles to lowercase for case-insensitive comparison
+  const lowerCaseAllowedRoles = allowedRoles.map((role) => role.toLowerCase());
+  console.log("Normalized allowed roles:", lowerCaseAllowedRoles);
+  console.log("Role check:", !lowerCaseAllowedRoles.includes(userRole));
+
+  if (!lowerCaseAllowedRoles.includes(userRole)) {
     console.log("Role not allowed, redirecting based on user role");
     // Redirect authenticated users to their appropriate home page
+    const adminRole = import.meta.env.VITE_ROLE_ADMIN.toLowerCase();
+    const staffRole = import.meta.env.VITE_ROLE_STAFF.toLowerCase();
+    const customerRole = import.meta.env.VITE_ROLE_CUSTOMER.toLowerCase();
+
     switch (userRole) {
-      case import.meta.env.VITE_ROLE_ADMIN:
+      case adminRole:
         return <Navigate to="/admin" replace />;
-      case import.meta.env.VITE_ROLE_STAFF:
+      case staffRole:
         return <Navigate to="/staff" replace />;
-      case import.meta.env.VITE_ROLE_CUSTOMER:
+      case customerRole:
+      case "user": // Additional fallback for "user" role
         return <Navigate to="/customer" replace />;
       default:
+        console.log("Default role case, redirecting to login");
         return <Navigate to="/login" replace />;
     }
   }

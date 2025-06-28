@@ -19,9 +19,7 @@ const Header: React.FC<HeaderProps> = ({ isScrolled }) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const cartDropdownRef = useRef<HTMLDivElement>(null);
 
-  const handleLogin = () => {
-    navigate("/login");
-  };
+  const handleLogin = () => navigate("/login");
   const handleLogout = () => {
     logout();
     navigate("/login");
@@ -43,10 +41,10 @@ const Header: React.FC<HeaderProps> = ({ isScrolled }) => {
         setIsCartOpen(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
   return (
     <header
       className={`header-fixed ${
@@ -54,51 +52,36 @@ const Header: React.FC<HeaderProps> = ({ isScrolled }) => {
       }`}
       style={{ transition: "background-color 0.3s, box-shadow 0.3s" }}
     >
-      {/* Top bar */}
-      <div className="bg-blue-900 text-white text-center py-2 text-sm">
+      <div className="bg-blue-900 text-white text-center py-1 text-sm">
         Chúng tôi có các sản phẩm chưa từng xuất hiện tại thị trường Việt Nam
       </div>
-      {/* Main header */}{" "}
+
       <div
         className={`${
           isScrolled
             ? "bg-blue-900 border-blue-900"
             : "bg-white border-gray-200"
-        }  px-6 border-b`}
+        } px-4 sm:px-6 border-b`}
         style={{ transition: "background-color 0.3s, border-color 0.3s" }}
       >
-        <div className="container mx-auto flex flex-wrap justify-between items-center">
-          {/* Logo */}{" "}
-          <div className="flex items-center">
-            <Link
-              to="/customer"
-              className={`text-2xl font-bold ${
-                isScrolled ? "text-white" : "text-blue-900"
-              }`}
-              onClick={(e) => {
-                e.currentTarget.style.opacity = "0.9";
-                setTimeout(() => {
-                  if (e.currentTarget) e.currentTarget.style.opacity = "1";
-                }, 150);
-              }}
-            >
+        <div className="container mx-auto flex flex-col md:flex-row items-center justify-between py-2 space-y-2 md:space-y-0">
+          {/* Logo */}
+          <div className="relative h-[80px] w-[200px] overflow-visible">
+            <Link to="/customer" className="block h-full relative">
               <img
                 src="/images/logo.png"
                 alt="Nhieuthuay"
-                className="h-[100px] w-[100px]"
-                style={{
-                  transform: "translateZ(0)",
-                  backfaceVisibility: "hidden",
-                }}
+                className="absolute top-1/2 left-0 -translate-y-1/2 h-[200px] w-[200px] object-contain z-10"
               />
             </Link>
           </div>
-          {/* Search bar */}
-          <div className="relative w-full md:w-1/3 my-4 md:my-0">
+
+          {/* Search */}
+          <div className="relative w-full md:w-1/3">
             <input
               type="text"
               placeholder="Tìm kiếm sản phẩm tại đây"
-              className={`w-full pl-10 pr-4 py-2 rounded-full border ${
+              className={`w-full pl-10 pr-4 py-1.5 rounded-full border ${
                 isScrolled
                   ? "border-white focus:ring-black bg-white placeholder-black"
                   : "border-gray-300 focus:ring-blue-500 bg-white placeholder-black"
@@ -111,8 +94,10 @@ const Header: React.FC<HeaderProps> = ({ isScrolled }) => {
               size={20}
             />
           </div>
-          {/* Navigation */}
-          <div className="flex items-center space-x-6">
+
+          {/* Cart & User */}
+          <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-6">
+            {/* Cart */}
             <div
               className="relative"
               onMouseEnter={() => setIsCartOpen(true)}
@@ -137,8 +122,6 @@ const Header: React.FC<HeaderProps> = ({ isScrolled }) => {
                 </div>
                 <span className="ml-2">Giỏ Hàng</span>
               </button>
-
-              {/* Cart Dropdown */}
               {isCartOpen && cartItems.length > 0 && (
                 <div className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg py-2 z-50">
                   <div className="max-h-96 overflow-y-auto">
@@ -180,9 +163,9 @@ const Header: React.FC<HeaderProps> = ({ isScrolled }) => {
               )}
             </div>
 
+            {/* User */}
             {isAuthenticated ? (
               <div className="relative" ref={dropdownRef}>
-                {" "}
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className={`flex items-center ${
@@ -191,7 +174,7 @@ const Header: React.FC<HeaderProps> = ({ isScrolled }) => {
                       : "text-gray-700 hover:text-blue-900"
                   } transition-colors duration-300`}
                 >
-                  <User size={24} />{" "}
+                  <User size={24} />
                   <span className="ml-2 flex items-center">
                     Welcome,{" "}
                     <span className="font-medium ml-1">
@@ -213,17 +196,17 @@ const Header: React.FC<HeaderProps> = ({ isScrolled }) => {
                         xmlns="http://www.w3.org/2000/svg"
                         width="14"
                         height="14"
-                        viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
+                        viewBox="0 0 24 24"
                       >
-                        <path d="M21 2v6h-6"></path>
-                        <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
-                        <path d="M3 22v-6h6"></path>
-                        <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+                        <path d="M21 2v6h-6" />
+                        <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+                        <path d="M3 22v-6h6" />
+                        <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
                       </svg>
                     </button>
                   </span>
@@ -235,7 +218,7 @@ const Header: React.FC<HeaderProps> = ({ isScrolled }) => {
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       Profile
-                    </button>{" "}
+                    </button>
                     <button
                       onClick={() => navigate("/history")}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -268,100 +251,55 @@ const Header: React.FC<HeaderProps> = ({ isScrolled }) => {
             )}
           </div>
         </div>
-      </div>{" "}
-      {/* Navigation menu */}
+      </div>
+
+      {/* Navigation */}
       <nav
         className={`${
           isScrolled ? "bg-blue-900 shadow-md" : "bg-white shadow-sm"
         } py-1`}
         style={{ transition: "background-color 0.3s, box-shadow 0.3s" }}
       >
-        <div className="container mx-auto">
-          <ul className="flex justify-center space-x-4 md:space-x-8">
-            {" "}
-            <li className="px-2">
+        <div className="container mx-auto overflow-x-auto">
+          <ul className="flex flex-wrap justify-center md:justify-center space-x-2 md:space-x-6 whitespace-nowrap">
+            <li>
               <Link
                 to="/product-all"
-                className={`font-medium block py-3 px-4 ${
+                className={`font-medium block py-2 px-4 ${
                   isScrolled ? "text-white" : "text-gray-700"
-                } focus:outline-none`}
-                style={{ transition: "color 0.2s ease" }}
-                onClick={(e) => {
-                  e.currentTarget.style.opacity = "0.9";
-                  setTimeout(() => {
-                    if (e.currentTarget) e.currentTarget.style.opacity = "1";
-                  }, 150);
-                }}
+                }`}
               >
-                <span className="relative z-10">Tất cả sản phẩm</span>
+                Tất cả sản phẩm
               </Link>
             </li>
-            <li className="px-2">
+            <li>
               <Link
                 to="/booking-products"
-                className={`font-medium block py-3 px-4 ${
+                className={`font-medium block py-2 px-4 ${
                   isScrolled ? "text-white" : "text-gray-700"
-                } focus:outline-none`}
-                style={{ transition: "color 0.2s ease" }}
-                onClick={(e) => {
-                  e.currentTarget.style.opacity = "0.9";
-                  setTimeout(() => {
-                    if (e.currentTarget) e.currentTarget.style.opacity = "1";
-                  }, 150);
-                }}
+                }`}
               >
-                <span className="relative z-10">Sản phẩm có sẵn</span>
+                Sản phẩm có sẵn
               </Link>
             </li>
-            <li className="px-2">
+            <li>
               <Link
                 to="/pre-order-products"
-                className={`font-medium block py-3 px-4 ${
+                className={`font-medium block py-2 px-4 ${
                   isScrolled ? "text-white" : "text-gray-700"
-                } focus:outline-none`}
-                style={{ transition: "color 0.2s ease" }}
-                onClick={(e) => {
-                  e.currentTarget.style.opacity = "0.9";
-                  setTimeout(() => {
-                    if (e.currentTarget) e.currentTarget.style.opacity = "1";
-                  }, 150);
-                }}
+                }`}
               >
-                <span className="relative z-10">Pre-Order</span>
+                Pre-Order
               </Link>
             </li>
-            {/* <li className="px-2">
-              <Link
-                to="/pre-order"
-                className={`font-medium block py-3 px-4 ${
-                  isScrolled ? "text-white" : "text-gray-700"
-                } focus:outline-none`}
-                style={{ transition: "color 0.2s ease" }}
-                onClick={(e) => {
-                  e.currentTarget.style.opacity = "0.9";
-                  setTimeout(() => {
-                    if (e.currentTarget) e.currentTarget.style.opacity = "1";
-                  }, 150);
-                }}
-              >
-                <span className="relative z-10">Pre-Order</span>
-              </Link>
-            </li> */}
-            <li className="px-2">
+            <li>
               <Link
                 to="/policy"
-                className={`font-medium block py-3 px-4 ${
+                className={`font-medium block py-2 px-4 ${
                   isScrolled ? "text-white" : "text-gray-700"
-                } focus:outline-none`}
-                style={{ transition: "color 0.2s ease" }}
-                onClick={(e) => {
-                  e.currentTarget.style.opacity = "0.9";
-                  setTimeout(() => {
-                    if (e.currentTarget) e.currentTarget.style.opacity = "1";
-                  }, 150);
-                }}
+                }`}
               >
-                <span className="relative z-10">Chính sách</span>
+                Chính sách
               </Link>
             </li>
           </ul>

@@ -108,13 +108,8 @@ const Result = () => {
               }`}
             >
               {status === "success"
-<<<<<<< HEAD
                 ? "Thanh toán thành công đơn hàng!"
                 : "Thanh toán thất bại!"}
-=======
-                ? "Thanh toán thành công !"
-                : "Thanh toán thất bại !"}
->>>>>>> FE_khanhTran
             </h1>
 
             {/* Transaction ID or Error */}

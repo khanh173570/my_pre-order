@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import Header from "../components/customer/Header";
-// import Footer from "../components/customer/Footer";
+import Footer from "../components/customer/Footer";
 
 const MainLayout: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -17,13 +17,15 @@ const MainLayout: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Header isScrolled={isScrolled} />
+    <div className="flex flex-col min-h-screen ">
+      <div className="max-h-[7%]">
+        <Header isScrolled={isScrolled} />
+      </div>
       <main className="flex-grow header-offset relative overflow-hidden">
         <div className="absolute inset-0  bg-cover bg-center blur-sm -z-10"></div>
         <Outlet />
       </main>
-      {/* <Footer /> */}
+      <Footer />
     </div>
   );
 };

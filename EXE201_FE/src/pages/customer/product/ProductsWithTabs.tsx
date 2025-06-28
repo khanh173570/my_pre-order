@@ -10,7 +10,7 @@ import ProductCard from "../../../components/ProductCard";
 import { useNavigate } from "react-router-dom";
 import Pagination from "../../../components/Pagination";
 
-const ITEMS_PER_PAGE = 8;
+const ITEMS_PER_PAGE = 8; // Number of items per page for pagination
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");

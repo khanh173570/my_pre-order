@@ -7,8 +7,11 @@ import {
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 
+const PAGE_SIZE = 10; // Số đơn hàng mỗi trang, có thể chỉnh theo ý muốn
+
 const OrderList: React.FC = () => {
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [allOrders, setAllOrders] = useState<Order[]>([]); // Lưu toàn bộ đơn hàng
+  const [orders, setOrders] = useState<Order[]>([]); // Đơn hàng hiển thị trên trang hiện tại
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -22,14 +25,15 @@ const OrderList: React.FC = () => {
     paymentDate: "",
   });
 
-  const fetchOrders = async (page: number = 1) => {
+  // Lấy toàn bộ đơn hàng 1 lần, sau đó chia trang ở frontend
+  const fetchAllOrders = async () => {
     try {
       setIsLoading(true);
-      const response = await orderService.getAllOrders(page, 10);
-      setOrders(response.data);
-      if (response.pagination) {
-        setTotalPages(response.pagination.totalPages);
-      }
+      const response = await orderService.getAllOrders(1, 9999); // Lấy hết
+      setAllOrders(response.data || []);
+      // Tính số trang
+      const total = response.data ? response.data.length : 0;
+      setTotalPages(Math.ceil(total / PAGE_SIZE));
     } catch (error) {
       toast.error("Không thể tải danh sách đơn hàng");
       console.error("Error fetching orders:", error);
@@ -38,9 +42,16 @@ const OrderList: React.FC = () => {
     }
   };
 
+  // Khi allOrders hoặc currentPage thay đổi, cập nhật orders hiển thị
   useEffect(() => {
-    fetchOrders(currentPage);
-  }, [currentPage]);
+    const startIdx = (currentPage - 1) * PAGE_SIZE;
+    const endIdx = startIdx + PAGE_SIZE;
+    setOrders(allOrders.slice(startIdx, endIdx));
+  }, [allOrders, currentPage]);
+
+  useEffect(() => {
+    fetchAllOrders();
+  }, []);
   const handleUpdateStatus = async () => {
     if (!selectedOrder) return;
 
@@ -69,7 +80,7 @@ const OrderList: React.FC = () => {
       await orderService.updateOrderStatus(selectedOrder._id, updateData);
       toast.success("Cập nhật trạng thái đơn hàng thành công");
       setShowStatusModal(false);
-      fetchOrders(currentPage);
+      fetchAllOrders();
     } catch (error) {
       toast.error("Không thể cập nhật trạng thái đơn hàng");
       console.error("Error updating order status:", error);
@@ -93,7 +104,7 @@ const OrderList: React.FC = () => {
     try {
       await orderService.deleteOrder(orderId);
       toast.success("Xóa đơn hàng thành công");
-      fetchOrders(currentPage);
+      fetchAllOrders();
     } catch (error) {
       toast.error("Không thể xóa đơn hàng");
       console.error("Error deleting order:", error);
@@ -141,14 +152,13 @@ const OrderList: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Quản lý đơn hàng</h1>
-          <p className="text-gray-600 mt-2">
-            Danh sách tất cả đơn hàng trong hệ thống
-          </p>
+      <div className="bg-gradient-to-r from-blue-800 via-blue-900 to-indigo-900 py-8 shadow-lg">
+        <div className="flex justify-center items-center">
+          <h1 className="text-4xl font-extrabold text-white tracking-wide">
+            🚚 Quản lý đơn hàng của hệ thống
+          </h1>
         </div>
       </div>
 
@@ -158,75 +168,80 @@ const OrderList: React.FC = () => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-center text-sm font-bold text-gray-900 uppercase tracking-wider">
                   Mã đơn hàng
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-center text-sm font-bold text-gray-900 uppercase tracking-wider">
                   Khách hàng
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-center text-sm font-bold text-gray-900 uppercase tracking-wider">
                   Tổng tiền
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-center text-sm font-bold text-gray-900 uppercase tracking-wider">
                   Trạng thái
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-center text-sm font-bold text-gray-900 uppercase tracking-wider">
                   Thanh toán
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-center text-sm font-bold text-gray-900 uppercase tracking-wider">
                   Ngày tạo
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-center text-sm font-bold text-gray-900 uppercase tracking-wider">
                   Thao tác
                 </th>
               </tr>
             </thead>
+
             <tbody className="bg-white divide-y divide-gray-200">
               {orders.map((order) => (
                 <tr key={order._id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium  text-center">
                     #{order._id.slice(-8)}
                   </td>{" "}
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="w-[15%] px-6 py-4 whitespace-nowrap  text-center">
                     <div className="text-sm font-medium text-gray-900">
                       {order.user?.name || "N/A"}
                     </div>
                     <div className="text-sm text-gray-500">
                       {order.user?.email || "N/A"}
                     </div>
-                  </td>{" "}
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  </td>
+                  <td className=" w-[10%]  px-6 py-4 whitespace-nowrap text-sm  text-center">
                     {(order.totalAmount || 0).toLocaleString("vi-VN")} ₫
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
-                        order.status
-                      )}`}
-                    >
-                      {order.status}
-                    </span>
+                  <td className="w-[10%] px-6 py-4 whitespace-nowrap ">
+                    <div className="flex justify-center">
+                      <span
+                        className={`px-2 py-1 text-xs font-semibold rounded-md ${getStatusColor(
+                          order.status
+                        )}`}
+                      >
+                        {order.status}
+                      </span>
+                    </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPaymentStatusColor(
-                        order.paymentStatus
-                      )}`}
-                    >
-                      {order.paymentStatus}
-                    </span>
+                  <td className="w-[10%] px-6 py-4 whitespace-nowrap">
+                    <div className="flex justify-center">
+                      <span
+                        className={`px-2 py-1 text-xs font-semibold rounded-md ${getPaymentStatusColor(
+                          order.paymentStatus
+                        )}`}
+                      >
+                        {order.paymentStatus}
+                      </span>
+                    </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className=" w-[10%] px-6 py-4 whitespace-nowrap text-sm  text-center">
                     {new Date(order.createdAt).toLocaleDateString("vi-VN")}
                   </td>{" "}
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex flex-wrap justify-start gap-2">
+                    <div className="flex flex-wrap justify-center gap-2">
                       <button
                         onClick={() => {
                           setSelectedOrder(order);
                           setShowDetailModal(true);
                         }}
-                        className="min-w-[80px] px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                        className="min-w-[90px] px-4 py-2 bg-blue-700 text-white font-semibold rounded-md shadow hover:bg-blue-800 transition duration-200"
                       >
                         Chi tiết
                       </button>
@@ -241,13 +256,13 @@ const OrderList: React.FC = () => {
                           });
                           setShowStatusModal(true);
                         }}
-                        className="min-w-[80px] px-3 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200"
+                        className="min-w-[90px] px-4 py-2 bg-green-600 text-white font-semibold rounded-md shadow hover:bg-green-700 transition duration-200"
                       >
                         Cập nhật
                       </button>
                       <button
                         onClick={() => handleDeleteOrder(order._id)}
-                        className="min-w-[80px] px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200"
+                        className="min-w-[90px] px-4 py-2 bg-red-600 text-white font-semibold rounded-md shadow hover:bg-red-700 transition duration-200"
                       >
                         Xóa
                       </button>
@@ -260,58 +275,50 @@ const OrderList: React.FC = () => {
         </div>
 
         {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="px-6 py-3 flex items-center justify-between border-t border-gray-200">
-            <div className="flex-1 flex justify-between sm:hidden">
-              <button
-                onClick={() => setCurrentPage(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-              >
-                Trước
-              </button>
-              <button
-                onClick={() => setCurrentPage(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-              >
-                Sau
-              </button>
-            </div>
-            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm text-gray-700">
-                  Trang <span className="font-medium">{currentPage}</span> của{" "}
-                  <span className="font-medium">{totalPages}</span>
-                </p>
-              </div>
-              <div>
-                <nav
-                  className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-                  aria-label="Pagination"
-                >
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (page) => (
-                      <button
-                        key={page}
-                        onClick={() => setCurrentPage(page)}
-                        className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                          currentPage === page
-                            ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
-                            : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    )
-                  )}
-                </nav>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center space-x-2 mt-8">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className={`px-3 py-1 rounded ${
+              currentPage === 1
+                ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                : "bg-blue-900 text-white hover:bg-blue-800"
+            }`}
+          >
+            Prev
+          </button>
 
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            <button
+              key={page}
+              onClick={() => setCurrentPage(page)}
+              className={`w-8 h-8 rounded flex items-center justify-center ${
+                currentPage === page
+                  ? "bg-blue-900 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+            >
+              {page}
+            </button>
+          ))}
+
+          <button
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+            }
+            disabled={currentPage === totalPages}
+            className={`px-3 py-1 rounded ${
+              currentPage === totalPages
+                ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                : "bg-blue-900 text-white hover:bg-blue-800"
+            }`}
+          >
+            Next
+          </button>
+        </div>
+      )}
       {/* Detail Modal */}
       {showDetailModal && selectedOrder && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">

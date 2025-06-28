@@ -52,18 +52,24 @@ const PreOrderProducts: React.FC = () => {
         let filteredProducts = [];
 
         if (selectedCategory === "all") {
-          // Get all pre-order products
+          // Get all pre-order products that are active
           filteredProducts = allProductsResponse.data.filter(
-            (p) => p.isPreOrder
-          );
-          console.log("All pre-order products:", filteredProducts.length);
-        } else {
-          // Filter by category first, then by pre-order status
-          filteredProducts = allProductsResponse.data.filter(
-            (p) => p.categoryId === parseInt(selectedCategory) && p.isPreOrder
+            (p) => p.isPreOrder && p.isActive
           );
           console.log(
-            "Pre-order products in category:",
+            "All pre-order & active products:",
+            filteredProducts.length
+          );
+        } else {
+          // Filter by category, pre-order status, and active status
+          filteredProducts = allProductsResponse.data.filter(
+            (p) =>
+              p.categoryId === parseInt(selectedCategory) &&
+              p.isPreOrder &&
+              p.isActive
+          );
+          console.log(
+            "Pre-order & active products in category:",
             filteredProducts.length
           );
         }
@@ -107,7 +113,7 @@ const PreOrderProducts: React.FC = () => {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 mt-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             Sản phẩm Pre-Order
           </h1>

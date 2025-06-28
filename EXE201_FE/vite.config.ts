@@ -10,7 +10,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "http://exe.api.thanhnt-tech.id.vn",
+        target: "http://preorder.api.thanhnt-tech.id.vn",
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/api/, "/api"),

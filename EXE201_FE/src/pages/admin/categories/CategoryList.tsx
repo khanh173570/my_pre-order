@@ -7,9 +7,13 @@ import {
 } from "../../../services/admin/category.service";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
+import Pagination from "../../../components/Pagination";
+
+const ITEMS_PER_PAGE = 10; // Hiển thị 10 danh mục mỗi trang
 
 const CategoryList: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
+  const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -19,14 +23,17 @@ const CategoryList: React.FC = () => {
     categoryName: "",
     description: "",
   });
+
   const fetchCategories = async () => {
     try {
       setIsLoading(true);
       const response = await adminCategoryService.getAllCategories();
-      setCategories(response.data);
-      if (response.pagination) {
-        setTotalPages(response.pagination.totalPages);
-      }
+      const allCategories = response.data || [];
+      console.log("Số lượng danh mục từ API: ", allCategories.length); // Debug
+      console.log("Full categories data: ", allCategories); // Debug chi tiết
+      setCategories(allCategories);
+      setTotalPages(Math.ceil(allCategories.length / ITEMS_PER_PAGE));
+      updateFilteredCategories(allCategories, 1);
     } catch (error) {
       toast.error("Không thể tải danh sách danh mục");
       console.error("Error fetching categories:", error);
@@ -35,13 +42,26 @@ const CategoryList: React.FC = () => {
     }
   };
 
+  const updateFilteredCategories = (data: Category[], page: number) => {
+    const startIndex = (page - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    const filtered = data.slice(startIndex, endIndex);
+    console.log("Filtered categories for page", page, ": ", filtered); // Debug
+    setFilteredCategories(filtered);
+  };
+
   useEffect(() => {
     fetchCategories();
-  }, [currentPage]);
+  }, []);
+
+  useEffect(() => {
+    updateFilteredCategories(categories, currentPage);
+    setTotalPages(Math.ceil(categories.length / ITEMS_PER_PAGE));
+    console.log("Current page: ", currentPage, "Total pages: ", totalPages); // Debug
+  }, [currentPage, categories]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     try {
       if (editingCategory) {
         const updateData: UpdateCategoryRequest = {
@@ -57,7 +77,6 @@ const CategoryList: React.FC = () => {
         await adminCategoryService.createCategory(formData);
         toast.success("Thêm danh mục thành công");
       }
-
       setShowModal(false);
       resetForm();
       fetchCategories();
@@ -79,8 +98,8 @@ const CategoryList: React.FC = () => {
     });
     setShowModal(true);
   };
+
   const handleDelete = async (categoryId: string) => {
-    // Use SweetAlert2 instead of window.confirm
     const result = await Swal.fire({
       title: "Xác nhận",
       text: "Bạn có chắc chắn muốn xóa danh mục này?",
@@ -93,6 +112,7 @@ const CategoryList: React.FC = () => {
     });
 
     if (!result.isConfirmed) return;
+
     try {
       await adminCategoryService.deleteCategory(categoryId);
       toast.success("Xóa danh mục thành công");
@@ -127,16 +147,17 @@ const CategoryList: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Quản lý danh mục</h1>
-          <p className="text-gray-600 mt-2">
-            Danh sách tất cả danh mục sản phẩm
-          </p>
+      <div className="bg-gradient-to-r from-blue-800 via-blue-900 to-indigo-900 py-8 shadow-lg">
+        <div className="flex justify-center items-center">
+          <h1 className="text-4xl font-extrabold text-white tracking-wide">
+            🚚 Quản lý danh mục của hệ thống
+          </h1>
         </div>
+      </div>
+      <div className="flex justify-end mb-4">
         <button
           onClick={openAddModal}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium flex items-center space-x-2"
+          className="flex justify-end gap-2 bg-gradient-to-r from-blue-500 to-blue-700 text-white font-semibold px-6 py-2 rounded-lg shadow-md hover:from-blue-600 hover:to-blue-800 transition duration-300"
         >
           <svg
             className="w-5 h-5"
@@ -154,10 +175,11 @@ const CategoryList: React.FC = () => {
           <span>Thêm danh mục</span>
         </button>
       </div>
-
-      {/* Categories Table */}
+      {/* Table */}
       <div className="bg-white shadow-md rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto overflow-y-auto max-h-[60vh]">
+          {" "}
+          {/* Thêm scroll nếu cần */}
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -177,9 +199,9 @@ const CategoryList: React.FC = () => {
                   Thao tác
                 </th>
               </tr>
-            </thead>{" "}
+            </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {categories.map((category) => (
+              {filteredCategories.map((category) => (
                 <tr key={category.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
@@ -200,8 +222,7 @@ const CategoryList: React.FC = () => {
                     {new Date().toLocaleDateString("vi-VN")}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex flex-wrap justify-start gap-2">
-                      {" "}
+                    <div className="flex gap-2">
                       <button
                         onClick={() => handleEdit(category)}
                         className="min-w-[80px] px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
@@ -221,142 +242,79 @@ const CategoryList: React.FC = () => {
             </tbody>
           </table>
         </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="px-6 py-3 flex items-center justify-between border-t border-gray-200">
-            <div className="flex-1 flex justify-between sm:hidden">
-              <button
-                onClick={() => setCurrentPage(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-              >
-                Trước
-              </button>
-              <button
-                onClick={() => setCurrentPage(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-              >
-                Sau
-              </button>
-            </div>
-            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm text-gray-700">
-                  Trang <span className="font-medium">{currentPage}</span> của{" "}
-                  <span className="font-medium">{totalPages}</span>
-                </p>
-              </div>
-              <div>
-                <nav
-                  className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-                  aria-label="Pagination"
-                >
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (page) => (
-                      <button
-                        key={page}
-                        onClick={() => setCurrentPage(page)}
-                        className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                          currentPage === page
-                            ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
-                            : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    )
-                  )}
-                </nav>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Add/Edit Modal */}
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={(page) => setCurrentPage(page)}
+        />
+      )}
+
+      {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
           <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium text-gray-900">
-                  {editingCategory ? "Cập nhật danh mục" : "Thêm danh mục mới"}
-                </h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium text-gray-900">
+                {editingCategory ? "Cập nhật danh mục" : "Thêm danh mục mới"}
+              </h3>
+              <button
+                onClick={() => setShowModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Tên danh mục
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.categoryName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, categoryName: e.target.value })
+                  }
+                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Nhập tên danh mục"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Mô tả
+                </label>
+                <textarea
+                  required
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
+                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  rows={3}
+                  placeholder="Nhập mô tả danh mục"
+                />
+              </div>
+              <div className="flex justify-end space-x-3 pt-4">
                 <button
+                  type="button"
                   onClick={() => setShowModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
                 >
-                  ✕
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700"
+                >
+                  {editingCategory ? "Cập nhật" : "Thêm"}
                 </button>
               </div>
-
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {" "}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Tên danh mục
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.categoryName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, categoryName: e.target.value })
-                    }
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Nhập tên danh mục"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Mô tả
-                  </label>
-                  <textarea
-                    required
-                    value={formData.description}
-                    onChange={(e) =>
-                      setFormData({ ...formData, description: e.target.value })
-                    }
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    rows={3}
-                    placeholder="Nhập mô tả danh mục"
-                  />
-                </div>
-                {editingCategory && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Trạng thái
-                    </label>
-                    <div className="mt-1 block text-sm">
-                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                        Hoạt động
-                      </span>
-                      <p className="text-xs text-gray-500 mt-1">
-                        (Bạn có thể thay đổi trạng thái bằng nút "Kích hoạt"/"Vô
-                        hiệu hóa" trong danh sách)
-                      </p>
-                    </div>
-                  </div>
-                )}
-                <div className="flex justify-end space-x-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setShowModal(false)}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-                  >
-                    Hủy
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700"
-                  >
-                    {editingCategory ? "Cập nhật" : "Thêm"}
-                  </button>
-                </div>
-              </form>
-            </div>
+            </form>
           </div>
         </div>
       )}

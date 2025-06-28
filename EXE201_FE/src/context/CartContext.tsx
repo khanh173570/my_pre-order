@@ -173,7 +173,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     }, 100);
   };
   const removeFromCart = (productId: string) => {
-    console.log("Removing item from cart:", productId);
+    const idStr = productId.toString();
+    console.log("Removing item from cart:", idStr);
 
     // Get current cart before change
     const cartKey = getCartKey();
@@ -181,12 +182,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     console.log("Current cart in localStorage before removal:", cartBefore);
 
     setCartItems((prevItems) => {
-      // Ensure prevItems is an array
       const safeItems = Array.isArray(prevItems) ? prevItems : [];
 
       // Log what we're removing
       const itemToRemove = safeItems.find(
-        (item) => (item.id?.toString() || "") === productId
+        (item) => (item.id?.toString() || "") === idStr
       );
       if (itemToRemove) {
         console.log(
@@ -198,37 +198,28 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         console.warn(`Item with ID ${productId} not found in cart`);
       }
 
-      return safeItems.filter(
-        (item) => (item.id?.toString() || "") !== productId
-      );
+      return safeItems.filter((item) => (item.id?.toString() || "") !== idStr);
     });
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
-    console.log("Updating quantity for item:", productId, "to", quantity);
-
-    if (quantity < 1) {
-      console.log("Quantity is less than 1, removing item from cart");
-      removeFromCart(productId);
-      return;
-    }
-
+    const idStr = productId.toString();
     setCartItems((prevItems) => {
-      // Ensure prevItems is an array
       const safeItems = Array.isArray(prevItems) ? prevItems : [];
-
+      if (quantity < 1) {
+        // Xóa luôn sản phẩm nếu số lượng < 1
+        return safeItems.filter(
+          (item) => (item.id?.toString() || "") !== idStr
+        );
+      }
       const itemExists = safeItems.some(
-        (item) => (item.id?.toString() || "") === productId
+        (item) => (item.id?.toString() || "") === idStr
       );
       if (!itemExists) {
-        console.warn(
-          `Cannot update quantity: Item with ID ${productId} not found in cart`
-        );
         return safeItems;
       }
-
       return safeItems.map((item) =>
-        (item.id?.toString() || "") === productId ? { ...item, quantity } : item
+        (item.id?.toString() || "") === idStr ? { ...item, quantity } : item
       );
     });
   };

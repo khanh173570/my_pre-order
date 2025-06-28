@@ -279,9 +279,9 @@ const Header: React.FC<HeaderProps> = ({ isScrolled }) => {
         <div className="container mx-auto">
           <ul className="flex justify-center space-x-4 md:space-x-8">
             {" "}
-            {/* <li className="px-2">
+            <li className="px-2">
               <Link
-                to="/products"
+                to="/product-all"
                 className={`font-medium block py-3 px-4 ${
                   isScrolled ? "text-white" : "text-gray-700"
                 } focus:outline-none`}
@@ -295,7 +295,7 @@ const Header: React.FC<HeaderProps> = ({ isScrolled }) => {
               >
                 <span className="relative z-10">Tất cả sản phẩm</span>
               </Link>
-            </li> */}
+            </li>
             <li className="px-2">
               <Link
                 to="/booking-products"
@@ -330,7 +330,7 @@ const Header: React.FC<HeaderProps> = ({ isScrolled }) => {
                 <span className="relative z-10">Pre-Order</span>
               </Link>
             </li>
-            <li className="px-2">
+            {/* <li className="px-2">
               <Link
                 to="/pre-order"
                 className={`font-medium block py-3 px-4 ${
@@ -346,7 +346,7 @@ const Header: React.FC<HeaderProps> = ({ isScrolled }) => {
               >
                 <span className="relative z-10">Pre-Order</span>
               </Link>
-            </li>
+            </li> */}
             <li className="px-2">
               <Link
                 to="/policy"

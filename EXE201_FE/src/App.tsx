@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
+  useLocation,
+  useNavigate,
 } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -25,7 +27,10 @@ import {
   History,
   Cart,
   CheckoutReview,
+<<<<<<< HEAD
   // PaymentReturn,
+=======
+>>>>>>> BK1
   Result,
 } from "./pages/customer";
 import HomeCustomer from "./pages/home/HomeCustomer";
@@ -37,14 +42,36 @@ import { BrandList } from "./pages/admin/brands";
 import AccountList from "./pages/admin/accounts/AccountList";
 import BookingProducts from "./pages/customer/BookingProducts";
 import PreOrderProducts from "./pages/customer/PreOrderProducts";
+import ProductsWithTabs from "./pages/customer/product/ProductsWithTabs";
+
+// Component xử lý redirect khi thanh toán hoặc vào trang gốc "/"
+const PaymentRedirector: React.FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (
+      location.pathname === "/" &&
+      (location.search.includes("status=success") ||
+        location.search.includes("status=fail"))
+    ) {
+      navigate(`/payment-result${location.search}`, { replace: true });
+    } else if (location.pathname === "/" && !location.search) {
+      navigate("/login", { replace: true });
+    }
+  }, [location, navigate]);
+
+  return null;
+};
 
 const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <ProductProvider>
-        <CartProvider>
-          <PreOrderProvider>
-            <Router>
+    <Router>
+      <PaymentRedirector />
+      <AuthProvider>
+        <ProductProvider>
+          <CartProvider>
+            <PreOrderProvider>
               <ToastContainer
                 position="bottom-right"
                 autoClose={3000}
@@ -58,7 +85,6 @@ const App: React.FC = () => {
                 theme="colored"
               />
               <AnimatePresence mode="wait">
-                {" "}
                 <Routes>
                   {/* Auth routes without layout */}
                   <Route path="/login" element={<Login />} />
@@ -71,27 +97,20 @@ const App: React.FC = () => {
 
                   {/* Customer routes with MainLayout */}
                   <Route element={<MainLayout />}>
-                    {/* Redirect root path to login */}
-                    <Route
-                      path="/"
-                      element={<Navigate to="/login" replace />}
-                    />
                     <Route
                       path="/customer"
                       element={
                         <ProtectedRoute
-                          allowedRoles={[]}
-                          //  allowedRoles={[import.meta.env.VITE_ROLE_CUSTOMER]}
+                          allowedRoles={[import.meta.env.VITE_ROLE_CUSTOMER]}
                         >
                           <HomeCustomer />
                         </ProtectedRoute>
                       }
-                    />{" "}
-                    {/* <Route path="/products" element={<Products />} /> */}
+                    />
                     <Route path="/product/:id" element={<ProductDetail />} />
                     <Route path="/pre-order" element={<PreOrder />} />
                     <Route path="/pre-order/:id" element={<PreOrderDetail />} />
-                    <Route path="/policy" element={<Policy />} />{" "}
+                    <Route path="/policy" element={<Policy />} />
                     <Route path="/cart" element={<Cart />} />
                     <Route
                       path="/checkout-review"
@@ -106,7 +125,7 @@ const App: React.FC = () => {
                           <Profile />
                         </ProtectedRoute>
                       }
-                    />{" "}
+                    />
                     <Route
                       path="/history"
                       element={
@@ -117,13 +136,18 @@ const App: React.FC = () => {
                         </ProtectedRoute>
                       }
                     />
+<<<<<<< HEAD
                     {/* <Route
                       path="/payment-return"
+=======
+                    <Route
+                      path="/product-all"
+>>>>>>> BK1
                       element={
                         <ProtectedRoute
                           allowedRoles={[import.meta.env.VITE_ROLE_CUSTOMER]}
                         >
-                          <PaymentReturn />
+                          <ProductsWithTabs />
                         </ProtectedRoute>
                       }
 <<<<<<< HEAD
@@ -138,7 +162,11 @@ const App: React.FC = () => {
                       path="/pre-order-products"
                       element={<PreOrderProducts />}
                     />
+<<<<<<< HEAD
 >>>>>>> b71609db450d032cb2defadeae196bd802434c5e
+=======
+                    <Route path="/payment-result" element={<Result />} />
+>>>>>>> BK1
                   </Route>
 
                   {/* Admin and Staff routes with AdminLayout */}
@@ -163,7 +191,7 @@ const App: React.FC = () => {
                           <HomeStaff />
                         </ProtectedRoute>
                       }
-                    />{" "}
+                    />
                     <Route
                       path="/admin"
                       element={
@@ -199,7 +227,7 @@ const App: React.FC = () => {
                           <ProductList />
                         </ProtectedRoute>
                       }
-                    />{" "}
+                    />
                     <Route
                       path="/admin/categories"
                       element={
@@ -240,13 +268,13 @@ const App: React.FC = () => {
 
                   {/* Fallback route */}
                   <Route path="*" element={<Navigate to="/login" replace />} />
-                </Routes>{" "}
+                </Routes>
               </AnimatePresence>
-            </Router>
-          </PreOrderProvider>
-        </CartProvider>
-      </ProductProvider>
-    </AuthProvider>
+            </PreOrderProvider>
+          </CartProvider>
+        </ProductProvider>
+      </AuthProvider>
+    </Router>
   );
 };
 

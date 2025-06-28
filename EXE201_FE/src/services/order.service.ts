@@ -135,7 +135,7 @@ export const orderService = {
   // Get all orders
   getAllOrders: async (
     pageNumber: number = 1,
-    pageSize: number = 10
+    pageSize: number = 99
   ): Promise<OrderResponse> => {
     try {
       const response = await apiCall(
@@ -183,7 +183,7 @@ export const orderService = {
   getOrdersByUserId: async (
     userId: number,
     pageNumber: number = 1,
-    pageSize: number = 10
+    pageSize: number = 99
   ): Promise<OrderResponse> => {
     try {
       const response = await apiCall(

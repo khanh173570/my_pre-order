@@ -10,7 +10,7 @@ type PaymentMethod = "COD" | "VNBANK" | "INTCARD";
 
 const CheckoutReview: React.FC = () => {
   const navigate = useNavigate();
-  const { cartItems, totalPrice, clearCart } = useCart();
+  const { cartItems, totalPrice } = useCart();
   const { isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [hadPaymentError, setHadPaymentError] = useState(false);
@@ -55,7 +55,7 @@ const CheckoutReview: React.FC = () => {
 
         if (result.success) {
           toast.success("Tạo đơn hàng COD thành công!");
-          clearCart();
+          // clearCart() moved to PaymentReturn component after successful payment verification
           navigate("/payment-return", {
             state: {
               orderId: result.orderId,
@@ -75,7 +75,7 @@ const CheckoutReview: React.FC = () => {
 
         if (paymentResult.success && paymentResult.paymentUrl) {
           toast.success("Tạo đơn hàng thành công! Chuyển hướng thanh toán...");
-          clearCart();
+          // clearCart() moved to PaymentReturn component after successful payment verification
           // Redirect to VNPay
           window.location.href = paymentResult.paymentUrl;
         } else {

@@ -35,12 +35,12 @@ const Cart: React.FC = () => {
         <h1 className="text-3xl font-bold mb-6">Giỏ hàng</h1>
         <div className="bg-white rounded-lg shadow-md p-6 text-center">
           <p className="text-gray-500">Giỏ hàng của bạn đang trống</p>
-          <a
-            href="/products"
+          <button
+            onClick={() => navigate("/products")}
             className="inline-block mt-4 bg-blue-900 text-white px-6 py-2 rounded-md hover:bg-blue-800 transition-colors"
           >
             Tiếp tục mua sắm
-          </a>
+          </button>
         </div>
       </div>
     );

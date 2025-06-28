@@ -25,3 +25,27 @@
   backface-visibility: hidden; /* Tránh flashing trên một số trình duyệt */
   -webkit-font-smoothing: subpixel-antialiased; /* Cải thiện render text */
 }
+
+Custom Scrollbar for Chrome,
+Edge,
+Safari ::-webkit-scrollbar {
+  width: 6px;
+  background: #ffffff; /* nền trắng */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2563eb; /* xanh dương đậm - blue-600 */
+  border-radius: 8px;
+  border: 2px solid #ffffff; /* viền cùng màu với nền trắng */
+  transition: background 0.3s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #1e40af; /* xanh dương đậm hơn - blue-800 */
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2563eb #ffffff; /* thumb | track */
+}

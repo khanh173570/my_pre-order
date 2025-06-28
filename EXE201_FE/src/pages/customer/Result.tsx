@@ -15,7 +15,7 @@ const Result = () => {
   const hasDispatched = useRef(false);
 
   const status = searchParams.get("status") as "success" | "failed" | null;
-  //   const balance = parseFloat(searchParams.get("balance") || "0");
+  const transactionId = searchParams.get("transactionId") || "";
   const error = searchParams.get("error") || ""; // Use useEffect to dispatch only once
   useEffect(() => {
     console.log("=== Result.tsx useEffect ===");
@@ -103,52 +103,53 @@ const Result = () => {
 
             {/* Status Title */}
             <h1
-              className={`text-3xl font-bold mb-6 ${
+              className={`text-3xl font-bold mb-4 ${
                 status === "success" ? "text-emerald-600" : "text-rose-600"
               }`}
             >
               {status === "success"
+<<<<<<< HEAD
                 ? "Thanh toán thành công !"
                 : "Thanh toán thất bại !"}
+=======
+                ? "Thanh toán thành công đơn hàng!"
+                : "Thanh toán thất bại!"}
+>>>>>>> BK1
             </h1>
 
-            {/* Status Details */}
-            {status === "success" ? (
-              <div className="w-full mb-8 p-6 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-100 shadow-sm">
-                <p className="text-center font-medium text-gray-600 mb-2">
-                  Số dư hiện tại của bạn
-                </p>
-                <p className="text-3xl font-semibold text-center text-gray-800">
-                  {/* {(userData.balance ?? balance).toLocaleString()} VND */}
-                  <span className="text-emerald-600">0</span>{" "}
-                  <span className="text-sm font-medium">VND</span>
-                </p>
+            {/* Transaction ID or Error */}
+            {status === "success" && transactionId && (
+              <div className="mb-6 w-full text-center">
+                <span className="text-gray-600 text-sm">Mã giao dịch:</span>
+                <div className="text-base font-semibold text-emerald-700 break-all">
+                  {transactionId}
+                </div>
               </div>
-            ) : (
-              <div className="w-full mb-8 p-6 bg-gradient-to-r from-red-50 to-rose-50 rounded-xl border border-red-100 shadow-sm">
-                <p className="text-center text-rose-600 font-medium">
-                  {error ? `Lỗi: ${error}` : "Vui lòng thử lại sau."}
-                </p>
+            )}
+            {status === "failed" && (
+              <div className="mb-6 w-full text-center">
+                <span className="text-rose-600 text-sm font-medium">
+                  {error
+                    ? `Lỗi: ${error}`
+                    : "Đã có lỗi xảy ra, vui lòng thử lại."}
+                </span>
               </div>
             )}
 
             {/* Action Buttons */}
-            <div className="flex gap-4 w-full">
+            <div className="flex gap-4 w-full mt-2">
               <button
-                className="w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-xl transition-all duration-300 hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 shadow-md hover:shadow-lg transform hover:translate-y-[-2px]"
-                onClick={() => navigate("/customer")}
+                className="w-1/2 px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-xl transition-all duration-300 hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 shadow-md hover:shadow-lg"
+                onClick={() => navigate("/product-all")}
               >
-                Quay về trang chủ
+                Về trang sản phẩm
               </button>
-
-              {/* {status === "failed" && (
-                <button
-                  className="w-full px-6 py-4 bg-white border-2 border-indigo-500 text-indigo-600 font-semibold rounded-xl transition-all duration-300 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 shadow-md hover:shadow-lg transform hover:translate-y-[-2px]"
-                  onClick={() => navigate("/topup")}
-                >
-                  Thử lại
-                </button>
-              )} */}
+              <button
+                className="w-1/2 px-4 py-3 bg-white border-2 border-indigo-500 text-indigo-600 font-semibold rounded-xl transition-all duration-300 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 shadow-md hover:shadow-lg"
+                onClick={() => navigate("/cart")}
+              >
+                Về giỏ hàng
+              </button>
             </div>
           </div>
         </div>

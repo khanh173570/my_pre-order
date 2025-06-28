@@ -47,12 +47,19 @@ const getAuthHeaders = () => {
 
 export const categoryService = {
   // Get all categories
-  getAllCategories: async (): Promise<CategoryResponse> => {
+  getAllCategories: async (
+    pageNumber: number = 1,
+    pageSize: number = 99
+  ): Promise<CategoryResponse> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/Category`, {
-        method: "GET",
-        headers: getAuthHeaders(),
-      });
+      console.log("Request params sent to API:", { pageNumber, pageSize }); // Debug
+      const response = await fetch(
+        `${API_BASE_URL}/Category?PageNumber=${pageNumber}&PageSize=${pageSize}`,
+        {
+          method: "GET",
+          headers: getAuthHeaders(),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -60,6 +67,7 @@ export const categoryService = {
       }
 
       const data = await response.json();
+      console.log("API response received:", data); // Debug
       return data;
     } catch (error) {
       console.error("Error fetching categories:", error);

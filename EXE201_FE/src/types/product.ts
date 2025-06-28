@@ -15,4 +15,5 @@ export interface Product {
   quantity?: number; // For backward compatibility
   createdAt: string;
   updatedAt: string;
+  isPreOrder?: boolean;
 }

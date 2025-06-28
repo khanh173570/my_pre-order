@@ -27,6 +27,10 @@ import {
   History,
   Cart,
   CheckoutReview,
+<<<<<<< HEAD
+=======
+  // PaymentReturn,
+>>>>>>> FE_khanhTran
   Result,
 } from "./pages/customer";
 import HomeCustomer from "./pages/home/HomeCustomer";
@@ -132,8 +136,13 @@ const App: React.FC = () => {
                         </ProtectedRoute>
                       }
                     />
+<<<<<<< HEAD
                     <Route
                       path="/product-all"
+=======
+                    {/* <Route
+                      path="/payment-return"
+>>>>>>> FE_khanhTran
                       element={
                         <ProtectedRoute
                           allowedRoles={[import.meta.env.VITE_ROLE_CUSTOMER]}
@@ -141,6 +150,9 @@ const App: React.FC = () => {
                           <ProductsWithTabs />
                         </ProtectedRoute>
                       }
+<<<<<<< HEAD
+                    /> */}
+=======
                     />
                     <Route
                       path="/booking-products"
@@ -150,7 +162,11 @@ const App: React.FC = () => {
                       path="/pre-order-products"
                       element={<PreOrderProducts />}
                     />
+<<<<<<< HEAD
                     <Route path="/payment-result" element={<Result />} />
+=======
+>>>>>>> b71609db450d032cb2defadeae196bd802434c5e
+>>>>>>> FE_khanhTran
                   </Route>
 
                   {/* Admin and Staff routes with AdminLayout */}

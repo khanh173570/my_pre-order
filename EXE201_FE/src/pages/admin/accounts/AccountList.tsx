@@ -83,7 +83,7 @@ const AccountList: React.FC = () => {
     } catch (error) {
       showError(
         editingAccount
-          ? "Không thể cập nhật tài khoản"
+          ? "Không thể cập nhật tài khoản "
           : "Không thể thêm tài khoản"
       );
       console.error("Error saving account:", error);

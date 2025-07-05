@@ -1,9 +1,16 @@
 # Build Phase
 FROM node:18 AS builder
 WORKDIR /app
+
 COPY package*.json ./
 RUN npm install
+
+# Copy mã nguồn và file env
 COPY . .
+
+RUN cp .env .env.production
+
+# Build với Vite
 RUN npm run build
 
 # Production Serve Phase

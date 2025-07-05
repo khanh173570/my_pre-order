@@ -6,6 +6,7 @@ import {
 } from "../types";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
+console.log("VITE_API_URL:", API_BASE_URL);
 
 export const loginUser = async (
   credentials: LoginFormData

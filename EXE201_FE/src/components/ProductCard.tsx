@@ -42,17 +42,17 @@ const ProductCard: React.FC<ProductCardProps> = ({
   return (
     <div
       key={product.id}
-      className="bg-white rounded-2xl shadow-xl overflow-hidden product-card border border-gray-200 flex flex-col transition-transform duration-300"
+      className="bg-white rounded-2xl shadow-xl overflow-hidden product-card border border-gray-200 flex flex-col transition-transform duration-300 hover:shadow-2xl hover:-translate-y-1"
     >
       {/* Single Image Display */}
       <div
-        className="w-full h-56 bg-gradient-to-b from-gray-100 to-gray-200 overflow-hidden cursor-pointer relative rounded-t-2xl transition-all duration-300"
+        className="w-full h-60 bg-gradient-to-b from-gray-100 to-gray-200 overflow-hidden cursor-pointer relative transition-all duration-300"
         onClick={handleViewProduct}
       >
         <img
           src={product.images?.[0] || product.image || "/images/product.webp"}
           alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-300 hover:scale-110 rounded-t-2xl"
+          className="w-full h-full  transition-transform duration-300 hover:scale-105"
         />
         {isOutOfStock() && (
           <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-10">
@@ -68,20 +68,60 @@ const ProductCard: React.FC<ProductCardProps> = ({
             </span>
           </div>
         )}
+
+        {/* Discount Badge - Large and Prominent */}
+        {product.originalPrice && product.originalPrice > product.price && (
+          <div className="absolute top-3 right-3 z-30">
+            <div className="bg-red-600 text-white px-4 py-2 rounded-full shadow-lg transform rotate-12 animate-bounce">
+              <span className="text-lg font-black tracking-wider">
+                -
+                {Math.round(
+                  ((product.originalPrice - product.price) /
+                    product.originalPrice) *
+                    100
+                )}
+                %
+              </span>
+            </div>
+          </div>
+        )}
       </div>
-      <div className="p-5 flex flex-col flex-1">
-        <h1 className="text-lg text-center font-bold mb-4 h-10 text-gray-800 transition-colors duration-300 truncate">
+      <div className="p-4 flex flex-col flex-1">
+        <h1 className="text-base text-center font-bold mb-3 h-8 text-black transition-colors duration-300 truncate">
           {product.name}
         </h1>
-        <div className="flex flex-col items-center mb-3">
+        <div className="flex flex-col items-center mb-2">
           <span className="text-xs font-semibold text-blue-900 mb-1">
             Giá bán lẻ:
           </span>
-          <span className="text-blue-900 text-2xl font-bold transition-all duration-300 hover:text-red-600 hover:scale-110">
-            {product.price.toLocaleString("vi-VN")} VND
-          </span>
+          {product.originalPrice && product.originalPrice > product.price ? (
+            <div className="flex flex-col items-center">
+              <span className="text-gray-500 text-lg line-through mb-1">
+                {product.originalPrice.toLocaleString("vi-VN")} VND
+              </span>
+              <span className="text-red-600 text-xl font-bold transition-all duration-300 hover:text-red-700 hover:scale-110">
+                {product.price.toLocaleString("vi-VN")} VND
+              </span>
+              {product.isPreOrder && (
+                <div className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full font-semibold mt-1">
+                  Đã được đặt: {product.quantity}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center">
+              <span className="text-blue-900 text-xl font-bold transition-all duration-300 hover:text-red-600 hover:scale-110">
+                {product.price.toLocaleString("vi-VN")} VND
+              </span>
+              {product.isPreOrder && (
+                <div className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full font-semibold mt-2">
+                  Còn lại: {product.quantity}
+                </div>
+              )}
+            </div>
+          )}
         </div>
-        <div className="flex justify-between items-center mb-2 text-sm">
+        <div className="flex justify-between items-center mb-1 text-sm">
           <span className="text-gray-600">
             {product.isPreOrder ? (
               <span className="font-semibold">Nhận đặt trước</span>
@@ -102,7 +142,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             </span>
           )}
         </div>
-        <p className="text-gray-500 text-xs mb-4 line-clamp-2 min-h-[32px]">
+        <p className="text-gray-500 text-xs mb-3 line-clamp-2 min-h-[24px]">
           {product.description}
         </p>
         <button

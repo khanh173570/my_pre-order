@@ -163,7 +163,7 @@ const ProductDetail: React.FC = () => {
             Không tìm thấy sản phẩm
           </h2>
           <button
-            onClick={() => navigate("/products")}
+            onClick={() => navigate("/product-all")}
             className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md"
           >
             Quay lại danh sách sản phẩm
@@ -319,7 +319,7 @@ const ProductDetail: React.FC = () => {
                     Thêm vào giỏ hàng
                   </button>
                   <button
-                    onClick={() => navigate("/products")}
+                    onClick={() => navigate("/product-all")}
                     className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 px-6 rounded-md font-medium transition-all duration-300"
                   >
                     Quay lại danh sách sản phẩm
@@ -337,7 +337,7 @@ const ProductDetail: React.FC = () => {
                   </p>
                 </div>
                 <button
-                  onClick={() => navigate("/products")}
+                  onClick={() => navigate("/product-all")}
                   className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 px-6 rounded-md font-medium transition-all duration-300"
                 >
                   Quay lại danh sách sản phẩm

@@ -95,7 +95,7 @@ const Products: React.FC = () => {
           <span className="text-sm font-bold text-blue-900">Giá bán lẻ:</span>
           {product.originalPrice && (
             <span className="text-gray-500 line-through">
-              {product.originalPrice.toLocaleString("vi-VN")} VND
+              {product.originalPrice.toLocaleString("vi-VN")} VNDs
             </span>
           )}
           <span className="text-blue-900 text-xl font-semibold transition-all duration-300 hover:text-red-600 hover:scale-110">

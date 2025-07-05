@@ -181,7 +181,8 @@ const PreOrderProducts: React.FC = () => {
                       product.discountedPrice > 0
                         ? product.discountedPrice
                         : product.price,
-                    originalPrice: product.price,
+                    originalPrice:
+                      product.discountedPrice > 0 ? product.price : undefined,
                     description: product.description || "",
                     image:
                       product.productAssets?.[0]?.imageUrl ||

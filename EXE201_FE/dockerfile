@@ -3,17 +3,14 @@ FROM node:18 AS builder
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install
+COPY .env .env  # ✅ THÊM DÒNG NÀY để inject biến môi trường
 
-# Copy mã nguồn và file env
+RUN npm install
 COPY . .
 
-RUN cp .env .env.production
-
-# Build với Vite
 RUN npm run build
 
-# Production Serve Phase
+# Serve phase
 FROM nginx:stable-alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY ./nginx.conf /etc/nginx/conf.d/default.conf

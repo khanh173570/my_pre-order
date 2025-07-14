@@ -1,8 +1,8 @@
-name: CI/CD Pipeline
+name: CI/CD FE EXE_PREORDER
 
 on:
   push:
-    branches: [FE_khanhTran] # Hoặc branch bạn dùng để deploy
+    branches: [FE_khanhTran]
 
 jobs:
   build-and-deploy:
@@ -17,8 +17,8 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install & Build FE (in EXE201_FE)
-        working-directory: EXE201_FE
+      - name: Build FE
+        working-directory: FE/EXE201_FE
         run: |
           npm install
           npm run build
@@ -29,9 +29,9 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build & Push Docker Image (FE)
+      - name: Build & Push Docker Image
         run: |
-          docker build -t nguyentanthanh1403/exe_pre_order_fe:latest ./EXE201_FE
+          docker build -t nguyentanthanh1403/exe_pre_order_fe:latest FE/EXE201_FE
           docker tag nguyentanthanh1403/exe_pre_order_fe:latest nguyentanthanh1403/exe_pre_order_fe:${{ github.sha }}
           docker push nguyentanthanh1403/exe_pre_order_fe:latest
           docker push nguyentanthanh1403/exe_pre_order_fe:${{ github.sha }}
@@ -43,7 +43,7 @@ jobs:
           username: thanhnt.tech
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /home/thanhnt.tech/EXE_PreOrder/FE
+            cd /home/thanhnt.tech/EXE_PreOrder
             docker compose stop preOrder-frontend || true
             docker compose rm -f preOrder-frontend || true
             docker compose pull

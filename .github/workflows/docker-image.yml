@@ -43,7 +43,7 @@ jobs:
           username: thanhnt.tech
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /home/thanhnt.tech/EXE_PreOrder
+            cd /home/thanhnt.tech/EXE_PreOrder/FE
             docker compose stop preOrder-frontend || true
             docker compose rm -f preOrder-frontend || true
             docker compose pull

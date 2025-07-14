@@ -31,7 +31,7 @@ jobs:
 
       - name: Build & Push Docker Image
         run: |
-          docker build -t nguyentanthanh1403/exe_pre_order_fe:latest FE/EXE201_FE
+          docker build -t nguyentanthanh1403/exe_pre_order_fe:latest EXE201_FE
           docker tag nguyentanthanh1403/exe_pre_order_fe:latest nguyentanthanh1403/exe_pre_order_fe:${{ github.sha }}
           docker push nguyentanthanh1403/exe_pre_order_fe:latest
           docker push nguyentanthanh1403/exe_pre_order_fe:${{ github.sha }}

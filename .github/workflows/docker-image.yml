@@ -2,7 +2,7 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [FE_khanhTran]
+    branches: [FE_khanhTran] # Hoặc branch bạn dùng để deploy
 
 jobs:
   build-and-deploy:
